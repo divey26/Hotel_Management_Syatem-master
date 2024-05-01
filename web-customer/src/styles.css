@@ -1,0 +1,137 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap");
+
+.Navbar {
+  height: 50px;
+  background-color: #fff;
+  color: white;
+  box-shadow: 0 0 4px black;
+  font-size: 28px;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+.Navbar h3 {
+  color: rgb(28, 172, 230);
+  padding: 5px 15px;
+  height: 40px;
+  margin: auto;
+}
+.Navbar span {
+  color: black;
+}
+.TitleSecure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.Amont {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.price {
+  background-color: #ebeed3;
+  padding: 4px 7px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+.AmountIcon {
+  font-weight: bold;
+}
+.secureIcon {
+  font-size: 25px;
+  color: blue;
+}
+header {
+  box-shadow: 0 0 1px black;
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #fff;
+}
+header p {
+  margin: 5px;
+}
+form {
+  /* border: 1px solid blueviolet; */
+  width: 300px;
+  margin: 20px auto;
+}
+main {
+  margin: 10px 0;
+  box-shadow: 0 0 2px black;
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #fff;
+}
+main .span {
+  color: red;
+  width: 300px;
+  height: 30px;
+  /* background-color: #1ff; */
+  padding: 5px 10px;
+}
+
+input {
+  margin-top: 10px;
+  padding: 5px;
+}
+.NomDuClient,
+.NumDeCarte {
+  margin-top: 10px;
+}
+.NomDuClient input,
+.NumDeCarte input {
+  width: 270px;
+  height: 35px;
+}
+.DateEtCvc {
+  display: flex;
+}
+.DateEtCvc div {
+  margin-top: 15px;
+}
+.DateEtCvc input {
+  width: 100px;
+  height: 30px;
+}
+.terme {
+  display: flex;
+  margin: 10px 0 -8px 0;
+  align-items: center;
+  align-content: center;
+  align-self: center;
+  font-weight: bold;
+}
+.terme input {
+}
+.terme p {
+  margin-top: 8px;
+  margin-left: 10px;
+  font-size: 12px;
+}
+/* .TermeConfidentialite {
+  cursor: pointer
+} */
+.btn {
+  width: 270px;
+  margin-top: 20px;
+  height: 35px;
+  border: none;
+  cursor: pointer;
+  background-color: #1282a2;
+  color: #fff;
+}
+.img1 {
+  width: 200px;
+  height: 55px;
+}
+.img2 {
+  width: 100px;
+  height: 55px;
+}
+footer {
+  display: flex;
+}
