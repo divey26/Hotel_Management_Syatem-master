@@ -72,8 +72,6 @@ const Template = ({ children }) => {
       icon: <CalendarOutlined />,
       onClick: () => navigate("/additional-services"),
     },
-
-   
     {
       key: "6",
       label: "Customer Affair",
