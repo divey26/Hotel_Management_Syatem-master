@@ -78,7 +78,11 @@ const BookingForm = ({ form, onFinish }) => {
           </Button>
         </Form.Item>
       </Form>
+      <div>
+        
+      </div>
     </div>
+    
   );
 };
 

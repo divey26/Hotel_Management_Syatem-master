@@ -9,6 +9,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
 import {
+  SolutionOutlined,
   HomeOutlined,
   MenuOutlined,
   CalendarOutlined,
@@ -71,6 +72,14 @@ const Template = ({ children }) => {
       icon: <CalendarOutlined />,
       onClick: () => navigate("/additional-services"),
     },
+
+   
+    {
+      key: "6",
+      label: "Customer Affair",
+      icon: <SolutionOutlined />,
+      onClick: () => navigate("/feedback"),
+    },
   ];
 
   const menuItems = [
@@ -104,6 +113,13 @@ const Template = ({ children }) => {
       icon: <CalendarOutlined />,
       onClick: () => navigate("/additional-service-requests"),
     },
+    {
+      key: "6",
+      label: "Customer Affair",
+      icon: <SolutionOutlined />,
+      onClick: () => navigate("/feedback"),
+    },
+   
   ];
 
   const handleLogout = () => {

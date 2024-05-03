@@ -19,6 +19,7 @@ import Orders from "./Food-order/Orders";
 import EventBookings from "./Events/EventBookings";
 import AdditionalServiceRequests from "./AdditionalService/AdditionalServiceRequests";
 import TravelRequests from "./Travels/TravelRequests";
+import Feedback from "./Feedback/Feedback";
 
 function App() {
   const storedCustomerId = localStorage.getItem("customerId");
@@ -106,6 +107,17 @@ function App() {
           element={
             isAuthenticated() ? (
               <Template children={<AdditionalServiceRequests />} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      
+      <Route
+          path="/feedback"
+          element={
+            isAuthenticated() ? (
+              <Template children={<Feedback />} />
             ) : (
               <Navigate to="/login" />
             )
