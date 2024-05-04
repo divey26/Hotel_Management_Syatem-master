@@ -88,33 +88,11 @@ function VehiclesPage() {
   };
 
   return (
-    <div >
-      {/* <Carousel ref={carouselRef} dots={false}>
-        {vehicles.map((vehicle) => (
-          <div
-            key={vehicle.registrationNumber}
-            style={{ textAlign: "center", padding: "2px" }}
-          >
-            <h3>{`${vehicle.make} ${vehicle.model} (${vehicle.year})`}</h3>
-            <p>Type: {vehicle.type}</p>
-            <p>Capacity: {vehicle.capacity}</p>
-            <p>Registration Number: {vehicle.registrationNumber}</p>
-           
-            <Button
-              type="primary"
-              onClick={() => handleBook(vehicle)}
-              style={{ marginTop: 10 }}
-            >
-              Book Now
-            </Button>
-          </div>
-        ))}
-      </Carousel> */}
+    <div>
       {vehicles.map((vehicle) => (
         <Card
           key={vehicle.registrationNumber}
           title={`${vehicle.make} ${vehicle.model} (${vehicle.year})`}
-
           bordered={true}
           style={{ width: 300, margin: "16px", float: "left" }}
           actions={[
@@ -123,28 +101,27 @@ function VehiclesPage() {
             </Button>,
           ]}
         >
-        
           {vehicle.imageUrls && vehicle.imageUrls.length > 0 ? (
-              <Carousel autoplay style={{ maxWidth: "auto", margin: "auto" }}>
-                {vehicle.imageUrls.map((imageUrl, index) => (
-                  <div key={index}>
-                    <img
-                      src={imageUrl}
-                      alt={`${vehicle.make} Image ${index + 1}`}
-                      style={{
-                        width: "100%",
-                        maxHeight: "auto",
-                        display: "block",
-                        margin: "auto",
-                      }}
-                    />
-                  </div>
-                ))}
-              </Carousel>
-            ) : (
-              <p>No images available</p>
-            )}
-              <p>Type: {vehicle.type}</p>
+            <Carousel autoplay style={{ maxWidth: "auto", margin: "auto" }}>
+              {vehicle.imageUrls.map((imageUrl, index) => (
+                <div key={index}>
+                  <img
+                    src={imageUrl}
+                    alt={`${vehicle.make} Image ${index + 1}`}
+                    style={{
+                      width: "100%",
+                      maxHeight: "auto",
+                      display: "block",
+                      margin: "auto",
+                    }}
+                  />
+                </div>
+              ))}
+            </Carousel>
+          ) : (
+            <p>No images available</p>
+          )}
+          <p>Type: {vehicle.type}</p>
           <p>Capacity: {vehicle.capacity}</p>
           <p>Registration Number: {vehicle.registrationNumber}</p>
         </Card>
