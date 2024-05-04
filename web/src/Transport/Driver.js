@@ -48,22 +48,30 @@ const DriverManagementPage = () => {
     fetchDrivers();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const filterData = () => {
-    setFilteredData(data);
-  };
 
-  // Function to handle search input change
+  const filterData = () => {
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+      return orderAttributesMatch ;
+    });
+    setFilteredData(filtered);
+  };
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
 
   const addNewDriver = () => {
     setIsAddDriverModalVisible(true);
@@ -188,7 +196,7 @@ const DriverManagementPage = () => {
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -220,15 +228,6 @@ const DriverManagementPage = () => {
                 Driver Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewDriver}
-              >
-                Add New Driver
-              </Button>
-            </div>
           </Space>
           <br />
           <br />
@@ -246,6 +245,15 @@ const DriverManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={addNewDriver}
+              >
+                Add New Driver
+              </Button>
+            </div>
           </div>
           <DataGrid
             rows={sortedRows}

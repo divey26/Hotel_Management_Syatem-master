@@ -1,7 +1,9 @@
 const TravelRequest = require("./travel-request.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createTravelRequest = async (travelRequestData) => {
   try {
+    travelRequestData.requestId = generateUniqueId("TR");
     const travelRequest = new TravelRequest(travelRequestData);
     await travelRequest.save();
     return travelRequest;
@@ -12,7 +14,11 @@ const createTravelRequest = async (travelRequestData) => {
 
 const getTravelRequests = async () => {
   try {
-    const travelRequests = await TravelRequest.find();
+    const travelRequests = await TravelRequest.find()
+      .populate("user")
+      .populate("order")
+      .populate("driver")
+      .populate("vehicle");
     return travelRequests;
   } catch (error) {
     throw error;
@@ -21,7 +27,11 @@ const getTravelRequests = async () => {
 
 const getTravelRequestById = async (travelRequestId) => {
   try {
-    const travelRequest = await TravelRequest.findById(travelRequestId);
+    const travelRequest = await TravelRequest.findById(travelRequestId)
+      .populate("user")
+      .populate("order")
+      .populate("driver")
+      .populate("vehicle");
     return travelRequest;
   } catch (error) {
     throw error;
@@ -32,7 +42,8 @@ const getTravelRequestsByUserId = async (userId) => {
   try {
     const requests = await TravelRequest.find({ user: userId })
       .populate("user")
-      .populate("order");
+      .populate("driver")
+      .populate("vehicle");
     return requests;
   } catch (error) {
     throw error;

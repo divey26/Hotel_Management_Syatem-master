@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema({
+  paymentId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
@@ -12,7 +17,7 @@ const paymentSchema = new mongoose.Schema({
   },
   order: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Order",
+    ref: "FoodOrder",
   },
   totalPrice: {
     type: Number,

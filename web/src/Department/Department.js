@@ -56,16 +56,31 @@ const DepartmentManagementPage = () => {
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
+  useEffect(() => {
+    filterData();
+  }, [searchQuery]);
+  
+  useEffect(() => {
+    filterData();
+  }, [data, searchQuery]);
+
   const filterData = () => {
-    setFilteredData(data);
+    const filtered = data
+      .map((row, index) => ({
+        id: row._id,
+        ...row,
+      }))
+      .filter((row) =>
+        Object.values(row).some((value) =>
+          String(value).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    setFilteredData(filtered);
   };
 
-  // Function to handle search input change
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
-
   const addNewDepartment = () => {
     setIsAddDepartmentModalVisible(true);
   };
@@ -112,6 +127,7 @@ const DepartmentManagementPage = () => {
   };
 
   const columns = [
+    { field: "departmentId", headerName: "Department ID", width: 150 },
     { field: "name", headerName: "Name", width: 200 },
     { field: "description", headerName: "Description", width: 250 },
     {
@@ -175,7 +191,7 @@ const DepartmentManagementPage = () => {
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -207,15 +223,6 @@ const DepartmentManagementPage = () => {
                 Department Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewDepartment}
-              >
-                Add New Department
-              </Button>
-            </div>
           </Space>
           <br />
           <br />
@@ -233,9 +240,18 @@ const DepartmentManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={addNewDepartment}
+              >
+                Add New Department
+              </Button>
+            </div>
           </div>
           <DataGrid
-            rows={sortedRows}
+            rows={filteredData}
             columns={columns}
             pageSize={10}
             checkboxSelection

@@ -1,7 +1,9 @@
 const Driver = require("./driver.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createDriver = async (driverData) => {
   try {
+    driverData.driverId = generateUniqueId("DRI");
     const driver = new Driver(driverData);
     await driver.save();
     return driver;

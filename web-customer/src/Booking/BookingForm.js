@@ -65,7 +65,7 @@ const BookingForm = ({ form, onFinish }) => {
           name="numberOfGuests"
           rules={[{ required: true, message: "Please input no of guests!" }]}
         >
-          <InputNumber min={1} max={10} />
+          <InputNumber min={1} />
         </Form.Item>
 
         <Form.Item label="Special Requests" name="requests">

@@ -1,8 +1,10 @@
 const EventLocation = require("./event-location.model");
+const generateUniqueId = require("../common/generate-key");
 
-const createEventLocation = async (EventLocationData) => {
+const createEventLocation = async (eventLocationData) => {
   try {
-    const newEventLocation = await EventLocation.create(EventLocationData);
+    eventLocationData.locationId = generateUniqueId("LOC")
+    const newEventLocation = await EventLocation.create(eventLocationData);
     return newEventLocation;
   } catch (error) {
     throw error;

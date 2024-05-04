@@ -103,13 +103,16 @@ const Login = () => {
         }).then(() => {
           const authToken = response.data.token;
           const loggedInUser = response.data.data;
+          console.log(loggedInUser);
           const userId =loggedInUser._id;
+          const empid=loggedInUser.employee;
           const data=loggedInUser;
           console.log(data);
           localStorage.setItem("authToken", authToken);
           localStorage.setItem("loggedInUserType", loggedInUser.userType);
           localStorage.setItem("userId", userId);
           localStorage.setItem("data", data);
+          localStorage.setItem("empid", empid);
           navigate("/dashboard");
         });
       }

@@ -27,7 +27,9 @@ import axios from "axios";
 import { storage } from "../Common/firebase";
 import { ref, uploadBytes } from "firebase/storage";
 import { getDownloadURL } from "firebase/storage";
-
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { exportToPDF } from "../Common/report";
 const { Title } = Typography;
 const { Content } = Layout;
 const token = localStorage.getItem("authToken");
@@ -51,7 +53,11 @@ const EmployeeManagementPage = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_BASE_URL}/employees`
       );
-      setData(response.data.data);
+      const employeesData = response.data.data.map((employee) => ({
+        id: employee._id, // Ensure each row has a unique id
+        ...employee,
+      }));
+      setData(employeesData);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
@@ -60,29 +66,53 @@ const EmployeeManagementPage = () => {
   useEffect(() => {
     fetchEmployees();
   }, []);
-
+  useEffect(() => {
+    setFilteredData(data); // Initialize filteredData with all employees
+  }, [data]);
   const transformedRows = data.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
+  const generatePDF = () => {
+    const columnsToExport = columns.filter(
+      (col) => col.field !== "action" && col.field !== "imageUrls" 
+      && col.field !=="zipCode" && col.field !=="state" && col.field !=="country"
+      && col.field !=="country" && col.field !=="city"
+    )
+    ;
+    const prepareDataForReport = (data) => {
+      return data.map((menu) => {
+        const rowData = {};
+        columnsToExport.forEach((col) => {
+          rowData[col.field] = menu[col.field];
+        });
+        return rowData;
+      });
+    };
 
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Menus Report",
+    });
   };
-  // Export to PDF function
-  const exportToPDF = () => {
-    message.success("Exported to PDF successfully");
-  };
+
   const filterData = () => {
-    setFilteredData(data);
+    const filtered = data.filter((row) =>
+      Object.values(row).some((value) =>
+        String(value).toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+    setFilteredData(filtered);
   };
 
-  // Function to handle search input change
+  useEffect(() => {
+    filterData();
+  }, [searchQuery]);
+
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
 
   const addNewEmployee = () => {
@@ -142,8 +172,9 @@ const EmployeeManagementPage = () => {
       role: employee.role,
     });
   };
-  
+
   const columns = [
+    { field: "employeeId", headerName: "Employee ID", width: 150 },
     { field: "firstName", headerName: "First Name", width: 150 },
     { field: "lastName", headerName: "Last Name", width: 150 },
     { field: "email", headerName: "Email", width: 200 },
@@ -215,7 +246,7 @@ const EmployeeManagementPage = () => {
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -247,15 +278,16 @@ const EmployeeManagementPage = () => {
                 Employee Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+            {/* Export buttons */}
+            <Space>
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewEmployee}
+                icon={<FilePdfOutlined />}
+                onClick={generatePDF}
               >
-                Add New Employee
+                Export to PDF
               </Button>
-            </div>
+            </Space>
           </Space>
           <br />
           <br />
@@ -277,26 +309,18 @@ const EmployeeManagementPage = () => {
             {/* Empty space to push buttons to the right */}
             <div style={{ flex: 1 }}></div>
 
-            {/* Export buttons */}
-            <Space>
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
               <Button
                 type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
+                icon={<PlusOutlined />}
+                onClick={addNewEmployee}
               >
-                Export to Excel
+                Add New Employee
               </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
-              </Button>
-            </Space>
+            </div>
           </div>
           <DataGrid
-            rows={sortedRows}
+            rows={filteredData}
             columns={columns}
             pageSize={10}
             checkboxSelection

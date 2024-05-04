@@ -23,6 +23,9 @@ import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { formatDate } from "../Common/date";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { exportToPDF } from "../Common/report";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -31,7 +34,7 @@ const token = localStorage.getItem("authToken");
 const AdditionalServiceRequestManagementPage = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState([]);
-
+  const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]); // State to hold filtered data
 
   const fetchAdditionalServiceRequests = async () => {
@@ -49,29 +52,81 @@ const AdditionalServiceRequestManagementPage = () => {
     fetchAdditionalServiceRequests();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
-  };
+
   // Export to PDF function
-  const exportToPDF = () => {
-    message.success("Exported to PDF successfully");
-  };
-  const filterData = () => {
-    setFilteredData(data);
+  const generatePDF = () => {
+    const columnsToExport = columns
+      .filter((col) => col.field !== "action" && col.field !== "imageUrls")
+      .map((col) => {
+        if (col.field === "user") {
+          return { field: "user", headerName: "Customer Name", width: 200 };
+        } else if (col.field === "service") {
+          return {
+            field: "service",
+            headerName: "Service",
+            width: 200,
+            renderCell: (params) => params.value.name,
+          };
+        }
+        return col;
+      });
+
+    const prepareDataForReport = (data) => {
+      return data.map((order) => {
+        const rowData = {};
+        const customerName = `${order.user.firstName} ${order.user.lastName}`;
+        const Service = order.service.name;
+        columnsToExport.forEach((col) => {
+          if (col.field === "bookingDate") {
+            rowData[col.field] = formatDate(order[col.field]);
+          } else if (col.field === "user") {
+            rowData[col.field] = customerName;
+          } else if (col.field === "service") {
+            rowData[col.field] = Service;
+          } else {
+            rowData[col.field] = order[col.field];
+          }
+        });
+        return rowData;
+      });
+    };
+
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Additional Service Requests Report",
+    });
   };
 
+  
   // Function to handle search input change
-  const handleSearchInputChange = (e) => {
-    // setSearchQuery(e.target.value);
-    filterData();
+  const filterData = () => {
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch =
+        Object.values(row).some((value) =>
+          value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        ) ||
+        row.service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) 
+
+      return orderAttributesMatch;
+    });
+    setFilteredData(filtered);
   };
+
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
 
   const handleConfirmation = (id) => {
     Modal.confirm({
@@ -239,7 +294,7 @@ const AdditionalServiceRequestManagementPage = () => {
       ),
     },
   ];
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -270,6 +325,16 @@ const AdditionalServiceRequestManagementPage = () => {
                 Additional Service Request Management
               </Title>
             </Space>
+            {/* Export buttons */}
+            <Space>
+              <Button
+                type="primary"
+                icon={<FilePdfOutlined />}
+                onClick={generatePDF}
+              >
+                Export to PDF
+              </Button>
+            </Space>
           </Space>
           <br />
           <br />
@@ -290,24 +355,6 @@ const AdditionalServiceRequestManagementPage = () => {
 
             {/* Empty space to push buttons to the right */}
             <div style={{ flex: 1 }}></div>
-
-            {/* Export buttons */}
-            <Space>
-              <Button
-                type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
-              >
-                Export to Excel
-              </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
-              </Button>
-            </Space>
           </div>
           <DataGrid
             rows={sortedRows}

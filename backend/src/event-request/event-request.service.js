@@ -1,8 +1,10 @@
 const EventRequest = require("./event-request.model");
+const generateUniqueId = require("../common/generate-key");
 
-const createEventRequest = async (EventRequestData) => {
+const createEventRequest = async (eventRequestData) => {
   try {
-    const eventRequest = new EventRequest(EventRequestData);
+    eventRequestData.requestId = generateUniqueId("ER");
+    const eventRequest = new EventRequest(eventRequestData);
     await eventRequest.save();
     return eventRequest;
   } catch (error) {

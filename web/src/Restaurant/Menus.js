@@ -27,6 +27,9 @@ import axios from "axios";
 import { storage } from "../Common/firebase";
 import { ref, uploadBytes } from "firebase/storage";
 import { getDownloadURL } from "firebase/storage";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { exportToPDF } from "../Common/report";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -45,6 +48,78 @@ const MenuManagementPage = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
 
+  const columns = [
+    { field: "menuId", headerName: "Menu ID", width: 150 },
+    { field: "type", headerName: "Type", width: 100 },
+    { field: "category", headerName: "Category", width: 100 },
+    { field: "name", headerName: "Name", width: 100 },
+    { field: "description", headerName: "Description", width: 150 },
+    { field: "price", headerName: "Price", width: 100 },
+    {
+      field: "availability",
+      headerName: "Availability",
+      width: 150,
+      renderCell: (params) => {
+        const availability = params.value || [];
+        return availability.length > 0 ? availability.join(",") : "None";
+      },
+    },
+    {
+      field: "meal",
+      headerName: "Meal",
+      width: 150,
+      renderCell: (params) => {
+        const meal = params.value || [];
+        return meal.length > 0 ? meal.join(",") : "None";
+      },
+    },
+    {
+      field: "imageUrls",
+      headerName: "Images",
+      width: 200,
+      renderCell: (params) => {
+        const imageUrls = params.value || [];
+        return (
+          <div
+            style={{ display: "flex", gap: "4px", justifyContent: "center" }}
+          >
+            {imageUrls.map((imageUrl, index) => (
+              <img
+                key={index}
+                src={imageUrl}
+                alt={`Menu Image ${index}`}
+                style={{ width: "30px", height: "30px" }}
+                onClick={() => handlePreview(imageUrl)}
+              />
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 150,
+      renderCell: (params) => (
+        <div>
+          <Button
+            onClick={() => handleEdit(params.row)}
+            icon={<EditOutlined style={{ color: "blue" }} />}
+          />
+          <Button
+            onClick={() => handleOpenImageUpload(params.row)}
+            icon={<UploadOutlined style={{ color: "yellow" }} />}
+            color="default"
+          />
+          <Button
+            onClick={() => confirmDelete(params.row.id)}
+            icon={<DeleteOutlined style={{ color: "red" }} />}
+          />
+        </div>
+      ),
+    },
+  ];
+
   const fetchMenus = async () => {
     try {
       const response = await axios.get(
@@ -60,6 +135,10 @@ const MenuManagementPage = () => {
     fetchMenus();
   }, []);
 
+  useEffect(() => {
+    filterData();
+  }, [data, searchQuery]);
+
   const transformedRows = data.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
@@ -67,23 +146,47 @@ const MenuManagementPage = () => {
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
+  const generatePDF = () => {
+    const columnsToExport = columns.filter(
+      (col) => col.field !== "action" && col.field !== "imageUrls"
+    );
+    const prepareDataForReport = (data) => {
+      return data.map((menu) => {
+        const rowData = {};
+        columnsToExport.forEach((col) => {
+          rowData[col.field] = menu[col.field];
+        });
+        return rowData;
+      });
+    };
+
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Menus Report",
+    });
   };
-  // Export to PDF function
-  const exportToPDF = () => {
-    message.success("Exported to PDF successfully");
-  };
+  
+  useEffect(() => {
+    filterData();
+  }, [searchQuery]);
+
   const filterData = () => {
-    setFilteredData(data);
+    const filtered = data
+      .map((row, index) => ({
+        id: row._id,
+        ...row,
+      }))
+      .filter((row) =>
+        Object.values(row).some((value) =>
+          String(value).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    setFilteredData(filtered);
   };
 
-  // Function to handle search input change
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
-
   const addNewMenu = () => {
     setIsAddMenuModalVisible(true);
   };
@@ -206,77 +309,6 @@ const MenuManagementPage = () => {
     setPreviewImage(null);
   };
 
-  const columns = [
-    { field: "type", headerName: "Type", width: 100 },
-    { field: "category", headerName: "Category", width: 100 },
-    { field: "name", headerName: "Name", width: 100 },
-    { field: "description", headerName: "Description", width: 150 },
-    { field: "price", headerName: "Price", width: 100 },
-    {
-      field: "availability",
-      headerName: "Availability",
-      width: 150,
-      renderCell: (params) => {
-        const availability = params.value || [];
-        return availability.length > 0 ? availability.join(",") : "None";
-      },
-    },
-    {
-      field: "meal",
-      headerName: "Meal",
-      width: 150,
-      renderCell: (params) => {
-        const meal = params.value || [];
-        return meal.length > 0 ? meal.join(",") : "None";
-      },
-    },
-    {
-      field: "imageUrls",
-      headerName: "Images",
-      width: 200,
-      renderCell: (params) => {
-        const imageUrls = params.value || [];
-        return (
-          <div
-            style={{ display: "flex", gap: "4px", justifyContent: "center" }}
-          >
-            {imageUrls.map((imageUrl, index) => (
-              <img
-                key={index}
-                src={imageUrl}
-                alt={`Menu Image ${index}`}
-                style={{ width: "30px", height: "30px" }}
-                onClick={() => handlePreview(imageUrl)}
-              />
-            ))}
-          </div>
-        );
-      },
-    },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 150,
-      renderCell: (params) => (
-        <div>
-          <Button
-            onClick={() => handleEdit(params.row)}
-            icon={<EditOutlined style={{ color: "blue" }} />}
-          />
-          <Button
-            onClick={() => handleOpenImageUpload(params.row)}
-            icon={<UploadOutlined style={{ color: "yellow" }} />}
-            color="default"
-          />
-          <Button
-            onClick={() => confirmDelete(params.row.id)}
-            icon={<DeleteOutlined style={{ color: "red" }} />}
-          />
-        </div>
-      ),
-    },
-  ];
-
   const onFinish = (values) => {
     onFinishAddMenu(values);
   };
@@ -318,7 +350,7 @@ const MenuManagementPage = () => {
       message.error(error.response.data.message);
     }
   };
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -326,9 +358,9 @@ const MenuManagementPage = () => {
       setLoggedInUserType(userType);
     }
   }, []);
-  
+
   return (
-    <LayoutNew userType={loggedInUserType}> 
+    <LayoutNew userType={loggedInUserType}>
       <Layout>
         <Content style={{ padding: "24px" }}>
           <Space
@@ -353,10 +385,10 @@ const MenuManagementPage = () => {
             <div style={{ marginLeft: "auto", marginRight: "20px" }}>
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewMenu}
+                icon={<FilePdfOutlined />}
+                onClick={generatePDF}
               >
-                Add New Menu
+                Export to PDF
               </Button>
             </div>
           </Space>
@@ -376,30 +408,18 @@ const MenuManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
-
-            {/* Empty space to push buttons to the right */}
-            <div style={{ flex: 1 }}></div>
-
-            {/* Export buttons */}
             <Space>
               <Button
                 type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
+                icon={<PlusOutlined />}
+                onClick={addNewMenu}
               >
-                Export to Excel
-              </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
+                Add New Menu
               </Button>
             </Space>
           </div>
           <DataGrid
-            rows={sortedRows}
+            rows={filteredData}
             columns={columns}
             pageSize={10}
             checkboxSelection

@@ -234,7 +234,7 @@ const AdditionalService = () => {
             name="noOfPersons"
             rules={[{ required: true, message: "Please input no of person!" }]}
           >
-            <InputNumber min={1} max={10} />
+            <InputNumber min={1} />
           </Form.Item>
           <Form.Item label="Additional Requests" name="requests">
             <TextArea rows={4} />

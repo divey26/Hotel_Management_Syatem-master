@@ -11,14 +11,14 @@ import { formatDate } from "../Common/date";
 const TravelRequests = () => {
   const token = localStorage.getItem("customerId");
   const [data, setTravelRequestsData] = useState([]);
+  
   const columns = [
-    { field: "_id", headerName: "Request ID", width: 150 },
-    { field: "travelType", headerName: "Request Type", width: 150 },
-    { field: "startupLocation", headerName: "Startup Location", width: 200 },
-    { field: "endupLocation", headerName: "Endup Location", width: 200 },
+    { field: "requestId", headerName: "Request ID", width: 150 },
+    { field: "startupLocation", headerName: "Pickup", width: 200 },
+    { field: "endupLocation", headerName: "Destination", width: 200 },
     {
       field: "travelStartDateTime",
-      headerName: "Travel Start Date Time",
+      headerName: "Start At",
       width: 180,
       renderCell: (params) => {
         return formatDate(params.value);
@@ -26,7 +26,7 @@ const TravelRequests = () => {
     },
     {
       field: "travelEndDateTime",
-      headerName: "Travel End Date Time",
+      headerName: "End At",
       width: 180,
       renderCell: (params) => {
         return formatDate(params.value);

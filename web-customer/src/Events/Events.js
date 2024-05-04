@@ -23,6 +23,7 @@ function EventLocations({ locations }) {
   const [visible, setVisible] = useState(false);
   const [selectedEventLocation, setSelectedEventLocation] = useState(null);
   const carouselRef = React.useRef();
+  const [form] = Form.useForm();
 
   const goTo = (dir) => {
     if (dir === "prev") {
@@ -56,7 +57,7 @@ function EventLocations({ locations }) {
   const handleBookEvent = async (values) => {
     if (storedCustomerId && storedAuthToken) {
       try {
-        const response = await axios.post(
+        await axios.post(
           `${process.env.REACT_APP_BACKEND_BASE_URL}/event-requests/`,
           {
             ...values,
@@ -64,8 +65,9 @@ function EventLocations({ locations }) {
             user: storedCustomerId,
           }
         );
-        console.log(response);
         message.success("Event requested successfully!");
+        form.resetFields();
+        navigate("/event-requests");
         closeDrawer();
       } catch (error) {
         message.error("Failed to submit event request.");
@@ -76,6 +78,15 @@ function EventLocations({ locations }) {
   const validateBookingDate = (_, value) => {
     if (value && value.isBefore(new Date(), "day")) {
       return Promise.reject("Booking date cannot be in the past");
+    }
+    return Promise.resolve();
+  };
+
+  const validateNoOfGuests = (_, value) => {
+    if (value > selectedEventLocation.noOfSeats) {
+      return Promise.reject(
+        `No of guests cannot be exceeded than ${selectedEventLocation.noOfSeats}`
+      );
     }
     return Promise.resolve();
   };
@@ -139,7 +150,7 @@ function EventLocations({ locations }) {
         open={visible}
         width={350}
       >
-        <Form layout="vertical" onFinish={handleBookEvent}>
+        <Form layout="vertical" form={form} onFinish={handleBookEvent}>
           <Form.Item
             label="Event Booking Date"
             name="bookingDate"
@@ -153,9 +164,12 @@ function EventLocations({ locations }) {
           <Form.Item
             label="Number of Guests"
             name="noOfGuests"
-            rules={[{ required: true, message: "Please input no of guests!" }]}
+            rules={[
+              { required: true, message: "Please input no of guests!" },
+              { validator: validateNoOfGuests },
+            ]}
           >
-            <InputNumber min={10} />
+            <InputNumber min={1} />
           </Form.Item>
           <Form.Item name="requests" label="Additional Requests">
             <Input.TextArea />

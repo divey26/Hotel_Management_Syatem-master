@@ -19,8 +19,6 @@ import {
   SyncOutlined,
   ShoppingCartOutlined,
   ToolOutlined,
-  CoffeeOutlined,
-  BellOutlined,
   ClockCircleOutlined,
   StarOutlined,
   ReadOutlined,
@@ -37,6 +35,7 @@ import { useNavigate } from "react-router-dom";
 import imageSrc from "./logo.png";
 
 const { Header, Content, Footer, Sider } = Layout;
+const loggedInUserType = localStorage.getItem("loggedInUserType");
 
 const adminUserItems = [
   {
@@ -60,7 +59,7 @@ const adminUserItems = [
         label: "Bookings",
       },
       {
-        key: "payments",
+        key: "roomPayments",
         icon: <ShoppingCartOutlined />,
         label: "Payments",
       },
@@ -122,7 +121,7 @@ const adminUserItems = [
         icon: <ScanOutlined />,
         label: "Scanner",
       },
-   
+
     ],
   },
   //det
@@ -163,7 +162,7 @@ const adminUserItems = [
     children: [
       {
         key: "eventLocations",
-        icon: <CoffeeOutlined />,
+        icon: <EnvironmentOutlined />,
         label: "Event Locations",
       },
       {
@@ -173,7 +172,7 @@ const adminUserItems = [
       },
       {
         key: "eventRequests",
-        icon: <CoffeeOutlined />,
+        icon: <CalendarOutlined />,
         label: "Event Requests",
       },
     ],
@@ -200,11 +199,11 @@ const adminUserItems = [
         icon: <ClockCircleOutlined />,
         label: "Transports",
       },
-      {
-        key: "trackTravels",
-        icon: <EnvironmentOutlined />,
-        label: "Travel Tracking",
-      },
+      // {
+      //   key: "trackTravels",
+      //   icon: <EnvironmentOutlined />,
+      //   label: "Travel Tracking",
+      // },
     ],
   },
 
@@ -227,7 +226,7 @@ const adminUserItems = [
     ],
   },
 
-  
+
   // Feedback Service System
   {
     key: "feedbackService",
@@ -235,6 +234,23 @@ const adminUserItems = [
     label: "Feedback Services",
   },
 
+  {
+    key: "billing",
+    icon: <CalendarOutlined />,
+    label: "Payments & Invoice",
+    children: [
+      {
+        key: "payments",
+        icon: <AppstoreAddOutlined />,
+        label: "Payments",
+      },
+      {
+        key: "invoice",
+        icon: <CheckCircleOutlined />,
+        label: "Invoice Generation",
+      },
+    ],
+  },
 ];
 
 const employeeUserItems = [
@@ -266,7 +282,7 @@ const headerIteam = [
   { key: "1", text: "User", icon: <UserSwitchOutlined /> },
   { key: "2", text: "LogOut", icon: <LogoutOutlined /> },
 ];
-const App = ({ children ,userType }) => {
+const App = ({ children, userType }) => {
   const navigate = useNavigate();
 
   const [collapsed, setCollapsed] = useState(false);
@@ -304,10 +320,12 @@ const App = ({ children ,userType }) => {
     if (item.key === "bookings") {
       navigate("/bookings");
     }
-    if (item.key === "payments") {
-      navigate("/payments");
+    if (item.key === "roomPayments") {
+      navigate("/room/payments");
     }
-
+    if (item.key === "payroll") {
+      navigate("/payroll");
+    }
     if (item.key === "menus") {
       navigate("/menus");
     }
@@ -318,8 +336,6 @@ const App = ({ children ,userType }) => {
       navigate("/orderTracking");
     }
 
-
-    
     if (item.key === "departments") {
       navigate("/departments");
     }
@@ -329,7 +345,7 @@ const App = ({ children ,userType }) => {
     if (item.key === "suppliers") {
       navigate("/suppliers");
     }
-   
+
     if (item.key === "new") {
       navigate("/rfid");
     }
@@ -340,7 +356,7 @@ const App = ({ children ,userType }) => {
       navigate("/det");
     }
 
-
+    
 
     if (item.key === "employee") {
       navigate("/employee");
@@ -384,6 +400,10 @@ const App = ({ children ,userType }) => {
     if (item.key === "additionalServicesRequests") {
       navigate("/additional-service-requests");
     }
+
+    if (item.key === "payments") {
+      navigate("/payments");
+    }
   };
 
   const {
@@ -408,9 +428,7 @@ const App = ({ children ,userType }) => {
           theme="dark"
           defaultSelectedKeys={["dashboard"]}
           mode="inline"
-          items={
-            userType === "admin" ? adminUserItems : employeeUserItems
-          }
+          items={userType === "admin" ? adminUserItems : employeeUserItems}
           onClick={handleMenuClick}
           style={{
             position: "sticky",

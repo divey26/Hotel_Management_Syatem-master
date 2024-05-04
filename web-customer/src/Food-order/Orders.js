@@ -21,7 +21,7 @@ const Orders = () => {
     },
   };
   const columns = [
-    { field: "_id", headerName: "Orders ID", width: 200 },
+    { field: "orderId", headerName: "Orders ID", width: 200 },
     {
       field: "items",
       headerName: "Items",

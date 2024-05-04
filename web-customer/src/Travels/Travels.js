@@ -3,6 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { Card, Drawer, Button, Input, Form, message } from "antd";
+import moment from "moment";
 
 function VehiclesPage() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ function VehiclesPage() {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     async function fetchVehicles() {
@@ -55,16 +57,34 @@ function VehiclesPage() {
           ...values,
           travelType: "customer-travel",
           user: storedCustomerId,
-          vehicleId: selectedVehicle._id,
+          vehicle: selectedVehicle._id,
         });
         console.log(response);
         message.success("Your request sent successful!");
+        form.resetFields();
+        navigate("/travel-requests");
         closeDrawer();
       } catch (error) {
         console.error("Error submitting request", error);
         message.error("Failed to submit request.");
       }
     }
+  };
+
+  const validateBookingDate = (_, value) => {
+    if (value && moment(value).isBefore(moment(), "day")) {
+      return Promise.reject("Booking date time cannot be in the past");
+    }
+    return Promise.resolve();
+  };
+
+  const validateNoOfPersons = (_, value) => {
+    if (value > selectedVehicle.capacity) {
+      return Promise.reject(
+        `No of persons cannot be exceeded than ${selectedVehicle.capacity}`
+      );
+    }
+    return Promise.resolve();
   };
 
   return (
@@ -95,7 +115,7 @@ function VehiclesPage() {
         width={360}
       >
         {selectedVehicle && (
-          <Form layout="vertical" onFinish={handleSubmit}>
+          <Form layout="vertical" from={form} onFinish={handleSubmit}>
             <Form.Item
               label="Passengers"
               name="passengers"
@@ -104,6 +124,7 @@ function VehiclesPage() {
                   required: true,
                   message: "Please input the number of passengers!",
                 },
+                { validator: validateNoOfPersons },
               ]}
             >
               <Input placeholder="Number of Passengers" />
@@ -134,21 +155,13 @@ function VehiclesPage() {
                   required: true,
                   message: "Please select the start date and time!",
                 },
+                { validator: validateBookingDate },
               ]}
             >
               <Input type="datetime-local" />
             </Form.Item>
-            <Form.Item
-              label="End Date and Time"
-              name="travelEndDateTime"
-              rules={[
-                {
-                  required: true,
-                  message: "Please select the end date and time!",
-                },
-              ]}
-            >
-              <Input type="datetime-local" />
+            <Form.Item name="requests" label="Additional Requests">
+              <Input.TextArea />
             </Form.Item>
             <Form.Item>
               <Button type="primary" htmlType="submit">

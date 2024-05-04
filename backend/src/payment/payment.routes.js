@@ -4,6 +4,7 @@ const paymentController = require("./payment.controller");
 
 router.post("/", paymentController.createPayment);
 router.get("/", paymentController.getPayments);
+router.get("/bookings", paymentController.getPaymentsForBookings);
 router.get("/:id", paymentController.getPaymentById);
 router.put("/:id", paymentController.updatePayment);
 router.delete("/:id", paymentController.deletePayment);

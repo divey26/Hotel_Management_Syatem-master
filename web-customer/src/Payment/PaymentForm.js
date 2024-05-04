@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useRef } from "react";
 import ".././styles.css";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,18 +12,19 @@ export default function PaymentForm() {
   const storedCustomerId = localStorage.getItem("customerId");
   const storedAuthToken = localStorage.getItem("customerAuthToken");
   const form = useRef();
-  const { meta, getExpiryDateProps, getCVCProps } = usePaymentInputs();
+  const { meta, getCardNumberProps, getExpiryDateProps, getCVCProps } =
+    usePaymentInputs();
   const location = useLocation();
-  const price = location.state?.price || "Default price"; // Fallback if no price is provided
-  const firstName = location.state?.firstName; // Fallback if no price is provided
+  const price = location.state?.price || "Default price";
+  const firstName = location.state?.firstName;
   const lastName = location.state?.lastName;
   const bookingid = location.state?.bookingid;
   const orderId = location.state?.orderId;
   const user = location.state?.user;
 
-  const [checked, setChecked] = React.useState(true);
-  const [cardNumber, setCardNumber] = React.useState("");
-  const [details, setDetails] = React.useState({
+  const [checked, setChecked] = useState(true);
+  const [cardNumber, setCardNumber] = useState("");
+  const [details, setDetails] = useState({
     expiryDate: "",
     cvc: "",
     name: "",
@@ -39,8 +40,22 @@ export default function PaymentForm() {
   };
 
   const handleChange = (e) => {
-    setDetails((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    if (name === "expiryDate") {
+      // Validate MM/YY format
+      if (/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) {
+        const [month, year] = value.split("/");
+        const currentYear = new Date().getFullYear() % 100; // Get last two digits of current year
+        const inputYear = parseInt(year, 10);
+        if (inputYear >= currentYear) {
+          setDetails((prev) => ({ ...prev, [name]: value }));
+        }
+      }
+    } else {
+      setDetails((prev) => ({ ...prev, [name]: value }));
+    }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (meta.isTouched && meta.error) {
@@ -93,6 +108,7 @@ export default function PaymentForm() {
       }
     }
   };
+
   const handleCheck = () => {
     setChecked(false);
   };
@@ -122,12 +138,10 @@ export default function PaymentForm() {
           </label>
         </div>
         <div className="cardNumber">
-          <label> card Number </label>
+          <label> Card Number </label>
           <input
-            // {...getCardNumberProps({ onChange: handleChangeCardNumber })}
-            onChange={handleChangeCardNumber}
+            {...getCardNumberProps({ onChange: handleChangeCardNumber })}
             placeholder="Valid Card Number"
-            name="cardNumber"
             maxLength="19"
             value={cardNumber}
           />
@@ -137,7 +151,7 @@ export default function PaymentForm() {
             <label> ExpiryDate </label>
             <input
               {...getExpiryDateProps({ onChange: handleChange })}
-              placeholder="MM/AA"
+              placeholder="MM/YY"
               name="expiryDate"
             />
           </div>
@@ -153,7 +167,7 @@ export default function PaymentForm() {
         <div className="terme">
           <input type="checkbox" onChange={handleCheck} />
           <p className="TermeConfidentialite">
-            Accept the term and Condations <Link href="#">confidentialite</Link>
+            Accept the term and Condations <Link to="#">confidentialite</Link>
           </p>
         </div>
         <input disabled={checked} type="submit" value="Pay" className="btn" />

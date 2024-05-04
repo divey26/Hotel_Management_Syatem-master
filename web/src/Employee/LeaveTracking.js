@@ -30,6 +30,8 @@ const LeaveTrackingPage = () => {
   const [searchText, setSearchQuery] = useState("");
   const [editingKey, setEditingKey] = useState("");
   const token = localStorage.getItem("userId");
+  const empid = localStorage.getItem("empid");
+
   const userType = localStorage.getItem("loggedInUserType");
 
   const [loggedInUserType, setLoggedInUserType] = useState("");
@@ -42,27 +44,48 @@ const LeaveTrackingPage = () => {
   }, []);
 
   const fetchData = async () => {
-    let apiUrl;
-    if (userType === "admin") {
-      apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/`; // Fetch all leave requests for admins
-    } else {
-      apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/user/${token}`; // Fetch leave requests for specific user
-    }
     try {
-      const response = await axios.get(apiUrl);
-      setData(
-        response.data.data.map((item, index) => ({
-          key: index.toString(),
+      let apiUrl;
+      if (userType === "admin") {
+        apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/`; // Fetch all leave requests for admins
+        const response = await axios.get(apiUrl);
+        const modifiedData = await Promise.all(
+          response.data.data.map(async (item, index) => {
+            let employeeName = ""; // Initialize employee name to an empty string
+            if (item.employee) { // Check if employeeId exists
+              const employeeResponse = await axios.get(
+                `${process.env.REACT_APP_BACKEND_BASE_URL}/employees/${item.employee}`
+              );
+              const employee = employeeResponse.data.data;
+              employeeName = `${employee.firstName} ${employee.lastName}`;
+            }
+            return {
+              ...item,
+              key: index.toString(),
+              employeeName: employeeName,
+              startDate: moment(item.startDate).format("YYYY-MM-DD"),
+              endDate: moment(item.endDate).format("YYYY-MM-DD"),
+            };
+          })
+        );
+        setData(modifiedData);
+      } else {
+        apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/user/${empid}`; // Fetch leave requests for specific user
+        const response = await axios.get(apiUrl);
+        const modifiedData = response.data.data.map((item, index) => ({
           ...item,
+          key: index.toString(),
           startDate: moment(item.startDate).format("YYYY-MM-DD"),
           endDate: moment(item.endDate).format("YYYY-MM-DD"),
-        }))
-      );
+        }));
+        setData(modifiedData);
+      }
     } catch (error) {
       message.error(`Failed to fetch data: ${error.message}`);
     }
   };
-
+  
+  
   useEffect(() => {
     fetchData();
   }, []);
@@ -89,9 +112,9 @@ const LeaveTrackingPage = () => {
     ...(userType === "admin"
       ? [
           {
-            title: "Employee",
-            dataIndex: "employee",
-            key: "employee",
+            title: "Employee Name",
+            dataIndex: "employeeName",
+            key: "employeeName",
           },
         ]
       : []),
@@ -133,7 +156,7 @@ const LeaveTrackingPage = () => {
       key: "action",
       render: (_, record) => (
         <Space>
-          {userType === "admin" && (
+          {(userType === "admin" && !record.status) && (
             <Button onClick={() => approveRequest(record._id)}>Approve</Button>
           )}
           {userType === "user" &&
@@ -237,9 +260,10 @@ const LeaveTrackingPage = () => {
     } else {
       // Insert logic
       try {
+        console.log(empid);
         const response = await axios.post(apiUrl, {
           ...values,
-          employee: token,
+          employee: empid,
           startDate: values.startDate.toISOString(),
           endDate: values.endDate.toISOString(),
         });

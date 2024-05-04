@@ -21,7 +21,7 @@ const Booking = () => {
     },
   };
   const columns = [
-    { field: "_id", headerName: "Booking ID", width: 200 },
+    { field: "bookingId", headerName: "Booking ID", width: 200 },
     {
       field: "room",
       headerName: "Room",

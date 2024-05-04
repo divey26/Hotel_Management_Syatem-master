@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const eventLocationSchema = new mongoose.Schema({
+  locationId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   name: {
     type: String,
     required: true,

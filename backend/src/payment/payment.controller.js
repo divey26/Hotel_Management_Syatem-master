@@ -30,6 +30,22 @@ const getPayments = async (req, res) => {
   }
 };
 
+const getPaymentsForBookings = async (req, res) => {
+  try {
+    const payments = await PaymentService.getPaymentsForBookings();
+    res.status(200).json({
+      success: true,
+      data: payments,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
 const getPaymentById = async (req, res) => {
   try {
     const payment = await PaymentService.getPaymentById(req.params.id);
@@ -93,6 +109,7 @@ const deletePayment = async (req, res) => {
 module.exports = {
   createPayment,
   getPayments,
+  getPaymentsForBookings,
   updatePayment,
   getPaymentById,
   deletePayment,

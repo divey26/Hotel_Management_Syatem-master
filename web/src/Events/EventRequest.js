@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from "react";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 import {
   Layout,
   Typography,
@@ -26,6 +23,9 @@ import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { formatDate } from "../Common/date";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { exportToPDF } from "../Common/report";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -53,52 +53,77 @@ const EventRequestManagementPage = () => {
     fetchEventRequests();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
-  };
-  // Export to PDF function
- 
-const exportToPDF = () => {
-  const unit = "pt";
-  const size = "A4"; 
-  const orientation = "portrait"; 
-  
-  const marginLeft = 40;
-  const doc = new jsPDF(orientation, unit, size);
-  
-  const title = "Event Requests";
-  const headers = [["Booking ID", "Customer", "Booked Date", "No Of Guests", "Location", "Status"]];
-  
-  const data = sortedRows.map(row => [row._id, `${row.user.firstName} ${row.user.lastName}`, formatDate(row.bookingDate), row.noOfGuests, row.location.name, row.status]);
-  
-  doc.setFontSize(15);
-  doc.text(title, marginLeft, 40);
-  doc.autoTable({
-    startY: 50,
-    head: headers,
-    body: data
-  });
-  
-  doc.save("event-requests.pdf");
-  
-  message.success("Exported to PDF successfully");
-};
-  const filterData = () => {
-    setFilteredData(data);
+  const generatePDF = () => {
+    const columnsToExport = columns
+      .filter((col) => col.field !== "action" && col.field !== "imageUrls")
+      .map((col) => {
+        if (col.field === "user") {
+          return { field: "user", headerName: "Customer Name", width: 200 };
+        } else if (col.field === "location") {
+          return {
+            field: "location",
+            headerName: "Location",
+            width: 200,
+            renderCell: (params) => params.value.name,
+          };
+        }
+        return col;
+      });
+
+    const prepareDataForReport = (data) => {
+      return data.map((order) => {
+        const rowData = {};
+        const customerName = `${order.user.firstName} ${order.user.lastName}`;
+        const Location = order.location.name;
+        columnsToExport.forEach((col) => {
+          if (col.field === "createdAt") {
+            rowData[col.field] = formatDate(order[col.field]);
+          } else if (col.field === "user") {
+            rowData[col.field] = customerName;
+          } else if (col.field === "location") {
+            rowData[col.field] = Location;
+          } else {
+            rowData[col.field] = order[col.field];
+          }
+        });
+        return rowData;
+      });
+    };
+
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Event Requests Report",
+    });
   };
 
-  // Function to handle search input change
+  const filterData = () => {
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch =
+        Object.values(row).some((value) =>
+          value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        ) ||
+        row.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.location.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return orderAttributesMatch;
+    });
+    setFilteredData(filtered);
+  };
+
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
 
   const handleConfirmation = (id) => {
     Modal.confirm({
@@ -163,7 +188,6 @@ const exportToPDF = () => {
     });
   };
 
-  
   const deleteItem = async (id) => {
     const response = await axios.delete(
       `${process.env.REACT_APP_BACKEND_BASE_URL}/event-requests/${id}`,
@@ -180,7 +204,7 @@ const exportToPDF = () => {
   };
 
   const columns = [
-    { field: "_id", headerName: "Booking ID", width: 150 },
+    { field: "requestId", headerName: "Request ID", width: 150 },
     {
       field: "user",
       headerName: "Customer",
@@ -267,7 +291,7 @@ const exportToPDF = () => {
     },
   ];
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -296,9 +320,21 @@ const exportToPDF = () => {
                 level={2}
                 style={{ fontSize: "24px", marginTop: "8px", color: "white" }}
               >
-                Event Requests Management
+                Event Requests
               </Title>
             </Space>
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+              {/* Export buttons */}
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={generatePDF}
+                >
+                  Export to PDF
+                </Button>
+              </Space>
+            </div>
           </Space>
           <br />
           <br />
@@ -319,24 +355,6 @@ const exportToPDF = () => {
 
             {/* Empty space to push buttons to the right */}
             <div style={{ flex: 1 }}></div>
-
-            {/* Export buttons */}
-            <Space>
-              <Button
-                type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
-              >
-                Export to Excel
-              </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
-              </Button>
-            </Space>
           </div>
           <DataGrid
             rows={sortedRows}

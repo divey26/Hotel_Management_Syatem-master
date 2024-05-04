@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from "react";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 import {
   Layout,
   Typography,
@@ -13,20 +10,20 @@ import {
   message,
 } from "antd";
 import {
-  
-  FilePdfOutlined,
   PlusOutlined,
   StockOutlined,
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
+  PrinterOutlined,
   QrcodeOutlined,
 } from "@ant-design/icons";
 import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
 import StockForm from "./AddEditStock";
 import axios from "axios";
-
+import "jspdf-autotable";
+import { exportToPDF } from "../Common/report";
 const { Title } = Typography;
 const { Content } = Layout;
 const token = localStorage.getItem("authToken");
@@ -35,7 +32,7 @@ const StockManagementPage = () => {
   const [form] = Form.useForm();
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]); // State to hold filtered data
   const [isAddStockModalVisible, setIsAddStockModalVisible] = useState(false);
   const [editingStock, setEditingStock] = useState(null);
 
@@ -51,91 +48,71 @@ const StockManagementPage = () => {
     }
   };
 
-
   useEffect(() => {
     fetchStocks();
   }, []);
 
-
-  const transformData = (data) =>
-  data.map((row) => ({
-    id: row._id.toString(),
+  const transformedRows = filteredData.map((row, index) => ({
+    id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
+  const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-
-   const sortedData = [...data].sort((a, b) => a._id.localeCompare(b._id));
-   
-
+  const filterData = () => {
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
   
-
+      const depMatch = row.department.name.toLowerCase().includes(searchQuery.toLowerCase());
   
-  const exportToPDF = () => {
-    const unit = "pt";
-    const size = "A4"; 
-    const orientation = "portrait"; 
-    
-    const marginLeft = 40;
-    const doc = new jsPDF(orientation, unit, size);
-    
-    const title = "Stock Management";
-    const headers = [["Department", "ID", "Name", "Description", "Unit", "Quantity", "Category", "Price"]];
-    
-    const data = filteredData.map(row => [row.department.name, row._id, row.name, row.description, row.unit, row.quantity, row.category, row.price]);
-    
-    doc.setFontSize(15);
-    doc.text(title, marginLeft, 40);
-    doc.autoTable({
-      startY: 50,
-      head: headers,
-      body: data
-    });
-    
-    doc.save("stock-management.pdf");
-    
-    message.success("Exported to PDF successfully");
-  };
-
-
-
-const filterData = () => {
-  if (!searchQuery.trim()) {
-    setFilteredData(sortedData);
-  } else {
-    const filtered = sortedData.filter((item) => {
-      // Filter data based on searchQuery
-      return Object.values(item).some((value) => {
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(searchQuery.toLowerCase());
-        }
-        return false;
-      });
+      return orderAttributesMatch || depMatch;
     });
     setFilteredData(filtered);
-  }
-};
-
-  useEffect(() => {
-    filterData();
-  }, [searchQuery, sortedData]);
-
+  };
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
 
   const addNewStock = () => {
     setIsAddStockModalVisible(true);
   };
+  const generatePDF = () => {
+    const columnsToExport = columns.filter(
+      (col) => col.field !== "action" && col.field !== "imageUrls"
+    );
+    const prepareDataForReport = (data) => {
+      return data.map((order) => {
+        const rowData = {};
+        const depName = `${order.department.name} `;
 
+       
+
+        columnsToExport.forEach((col) => {
+         if (col.field === "department") {
+            rowData[col.field] = depName;
+          } else {
+            rowData[col.field] = order[col.field];
+          }
+        });
+        return rowData;
+      });
+    };
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Stock Report",
+    });
+  };
   const handleCancel = () => {
     setIsAddStockModalVisible(false);
     setEditingStock(null);
     form.resetFields();
   };
 
-
-  //msg for delete
   const confirmDelete = (id) => {
     Modal.confirm({
       title: "Confirm Delete",
@@ -146,30 +123,23 @@ const filterData = () => {
     });
   };
 
-
-
-
-  //for delete
   const deleteItem = async (id) => {
-    try {
-      await axios.delete(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/stocks/${id}`,
-        {
-          headers: {
-            Authorization: token,
-          },
-        }
-      );
+    const response = await axios.delete(
+      `${process.env.REACT_APP_BACKEND_BASE_URL}/stocks/${id}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+    if (response.data.success) {
       message.success("Stock deleted successfully");
       fetchStocks();
-    } catch (error) {
-      console.error("Error deleting stock:", error);
-      message.error("Failed to delete stock");
     }
   };
 
-  //for edit
   const handleEdit = (stock) => {
+    console.log(stock);
     setEditingStock(stock);
     setIsAddStockModalVisible(true);
     form.setFieldsValue({
@@ -182,30 +152,31 @@ const filterData = () => {
       price: stock.price,
     });
   };
- 
 
-  //table
   const columns = [
+    { field: "stockId", headerName: "Stock ID", width: 150 },
     {
       field: "department",
       headerName: "Department",
       width: 150,
-      renderCell: (params) => params.value ? params.value.name : '',
+      renderCell: (params) => {
+        return params.value.name;
+      },
     },
-    { field: "_id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Name", width: 100 },
     { field: "description", headerName: "Description", width: 150 },
     { field: "unit", headerName: "Unit", width: 100 },
     { field: "quantity", headerName: "Quantity", width: 100 },
     { field: "category", headerName: "Category", width: 100 },
     { field: "price", headerName: "Price", width: 100 },
+
     {
       field: "action",
       headerName: "Action",
       width: 150,
       renderCell: (params) => (
         <div>
-           <Button
+                     <Button
             onClick={() => confirmDelete(params.row.id)}
             icon={<QrcodeOutlined style={{ color: "black" }} />}
           />
@@ -217,7 +188,6 @@ const filterData = () => {
             onClick={() => confirmDelete(params.row.id)}
             icon={<DeleteOutlined style={{ color: "red" }} />}
           />
-          
         </div>
       ),
     },
@@ -227,11 +197,10 @@ const filterData = () => {
     onFinishAddStock(values);
   };
 
-
   //to add stocks
   const onFinishAddStock = async (values) => {
     try {
-      let response;
+      let response = null;
       if (editingStock) {
         response = await axios.put(
           `${process.env.REACT_APP_BACKEND_BASE_URL}/stocks/${editingStock.id}`,
@@ -276,11 +245,6 @@ const filterData = () => {
     }
   }, []);
 
-
-  
-
-
-
   return (
     <LayoutNew userType={loggedInUserType}>
       <Layout>
@@ -304,15 +268,15 @@ const filterData = () => {
                 Stock Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+            <Space>
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewStock}
+                icon={<PrinterOutlined />}
+                onClick={generatePDF}
               >
-                Add New Stock
+                Export to PDF
               </Button>
-            </div>
+            </Space>
           </Space>
           <br />
           <br />
@@ -330,37 +294,30 @@ const filterData = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
-
-            {/* Empty space to push buttons to the right */}
-            <div style={{ flex: 1 }}></div>
-
-            {/* Export buttons */}
-            <Space>
-             
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
               <Button
                 type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
+                icon={<PlusOutlined />}
+                onClick={addNewStock}
               >
-                Export to PDF
+                Add New Stock
               </Button>
-            </Space>
+            </div>
           </div>
-
-         <DataGrid
-         rows={transformData(filteredData)}
-         columns={columns}
-         pageSize={10}
-         autoHeight
-         sortModel={[
-         {
-           field: "_id",
-            sort: "asc",
-          },
-        ]}
-        />
-
-
+          <DataGrid
+            rows={sortedRows}
+            columns={columns}
+            pageSize={10}
+            checkboxSelection
+            disableSelectionOnClick
+            autoHeight
+            sortModel={[
+              {
+                field: "number",
+                sort: "asc",
+              },
+            ]}
+          />
           <Modal
             open={isAddStockModalVisible}
             title={editingStock ? "Edit Stock" : "Add New Stock"}

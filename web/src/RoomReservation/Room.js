@@ -59,21 +59,25 @@ const RoomManagementPage = () => {
   useEffect(() => {
     fetchRooms();
   }, []);
-
-  const transformedRows = data.map((row, index) => ({
-    id: row._id, // or any other property that can uniquely identify the row
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredData(data);
+    } else {
+      const filtered = data.filter((room) =>
+        Object.values(room).some((value) =>
+          String(value).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+      setFilteredData(filtered);
+    }
+  }, [data, searchQuery]);
+  const transformedRows = filteredData.map((row, index) => ({
+    id: row._id,
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
-  };
-  // Export to PDF function
-  const exportToPDF = () => {
-    message.success("Exported to PDF successfully");
-  };
   const filterData = () => {
     setFilteredData(data);
   };
@@ -203,6 +207,7 @@ const RoomManagementPage = () => {
   };
 
   const columns = [
+    { field: "roomId", headerName: "Room ID", width: 100 },
     { field: "number", headerName: "Number", width: 100 },
     { field: "description", headerName: "Description", width: 150 },
     { field: "location", headerName: "Location", width: 100 },
@@ -312,11 +317,22 @@ const RoomManagementPage = () => {
         fetchRooms();
       }
     } catch (error) {
-      message.error(error.response.data.message);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message &&
+        error.response.data.message.includes("E11000 duplicate key error")
+      ) {
+        // Duplicate key error
+        message.error("Room with same number already exists");
+      } else {
+        // Other errors
+        message.error(error.response.data.message);
+      }
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -348,15 +364,6 @@ const RoomManagementPage = () => {
                 Room Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewRoom}
-              >
-                Add New Room
-              </Button>
-            </div>
           </Space>
           <br />
           <br />
@@ -374,27 +381,15 @@ const RoomManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
-
-            {/* Empty space to push buttons to the right */}
-            <div style={{ flex: 1 }}></div>
-
-            {/* Export buttons */}
-            <Space>
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
               <Button
                 type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
+                icon={<PlusOutlined />}
+                onClick={addNewRoom}
               >
-                Export to Excel
+                Add New Room
               </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
-              </Button>
-            </Space>
+            </div>
           </div>
           <DataGrid
             rows={sortedRows}

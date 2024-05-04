@@ -65,29 +65,31 @@ const AdditionalServiceManagementPage = () => {
     fetchAdditionalServices();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
-  };
-  // Export to PDF function
-  const exportToPDF = () => {
-    message.success("Exported to PDF successfully");
-  };
   const filterData = () => {
-    setFilteredData(data);
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+      return orderAttributesMatch ;
+    });
+    setFilteredData(filtered);
   };
-
-  // Function to handle search input change
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
+
+
 
   const addNewAdditionalService = () => {
     setIsAddAdditionalServiceModalVisible(true);
@@ -135,7 +137,7 @@ const AdditionalServiceManagementPage = () => {
     setIsAddAdditionalServiceModalVisible(true);
     form.setFieldsValue({
       name: AdditionalService.name,
-      description: AdditionalService.description
+      description: AdditionalService.description,
     });
   };
 
@@ -297,7 +299,7 @@ const AdditionalServiceManagementPage = () => {
       message.error(error.response.data.message);
     }
   };
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -328,15 +330,6 @@ const AdditionalServiceManagementPage = () => {
                 Additional Service Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewAdditionalService}
-              >
-                Add New Additional Service
-              </Button>
-            </div>
           </Space>
           <br />
           <br />
@@ -354,25 +347,16 @@ const AdditionalServiceManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
-
             {/* Empty space to push buttons to the right */}
             <div style={{ flex: 1 }}></div>
 
-            {/* Export buttons */}
             <Space>
               <Button
                 type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
+                icon={<PlusOutlined />}
+                onClick={addNewAdditionalService}
               >
-                Export to Excel
-              </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
+                Add New Additional Service
               </Button>
             </Space>
           </div>

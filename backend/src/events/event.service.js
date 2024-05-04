@@ -1,7 +1,9 @@
 const Event = require("./event.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createEvent = async (eventData) => {
   try {
+    eventData.eventId = generateUniqueId("EV");
     const event = new Event(eventData);
     await event.save();
     return event;
@@ -12,7 +14,7 @@ const createEvent = async (eventData) => {
 
 const getEvents = async () => {
   try {
-    const event = await Event.find().populate('locations');
+    const event = await Event.find().populate("locations");
     return event;
   } catch (error) {
     throw error;

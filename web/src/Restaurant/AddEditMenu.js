@@ -41,7 +41,6 @@ const MenuForm = ({ form, onFinish }) => {
           <Form.Item
             name="description"
             label="Description"
-            rules={[{ required: true, message: "Please input description!" }]}
           >
             <Input.TextArea />
           </Form.Item>
@@ -86,11 +85,6 @@ const MenuForm = ({ form, onFinish }) => {
           </Form.Item>
         </Col>
       </Row>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form.Item>
     </Form>
   );
 };

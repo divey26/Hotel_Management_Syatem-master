@@ -8,6 +8,7 @@ import {
   Button,
   Modal,
   message,
+  Upload,
 } from "antd";
 import {
   PlusOutlined,
@@ -15,11 +16,15 @@ import {
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
 import VehicleForm from "./AddEditVehicle";
 import axios from "axios";
+import { storage } from "../Common/firebase";
+import { ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL } from "firebase/storage";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -33,6 +38,10 @@ const VehicleManagementPage = () => {
   const [isAddVehicleModalVisible, setIsAddVehicleModalVisible] =
     useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
+  const [uploadImageRoom, setUploadImageRoom] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   const fetchVehicles = async () => {
     try {
@@ -49,22 +58,31 @@ const VehicleManagementPage = () => {
     fetchVehicles();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const filterData = () => {
-    setFilteredData(data);
-  };
 
-  // Function to handle search input change
+  const filterData = () => {
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+      return orderAttributesMatch ;
+    });
+    setFilteredData(filtered);
+  };
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
+
 
   const addNewVehicle = () => {
     setIsAddVehicleModalVisible(true);
@@ -114,6 +132,70 @@ const VehicleManagementPage = () => {
       registrationNumber: vehicle.registrationNumber,
     });
   };
+  const handleOpenImageUpload = (room) => {
+    setIsImageModalVisible(true);
+    setUploadImageRoom(room);
+  };
+
+  const handleUpload = ({ fileList }) => {
+    console.log(fileList);
+    const files = fileList.map((file) => file.originFileObj);
+    console.log(files);
+    setSelectedImages(files);
+  };
+  const handleCancelImageUpload = () => {
+    setIsImageModalVisible(false);
+    setUploadImageRoom(null);
+  };
+  const handleImageUpload = async () => {
+    try {
+      let uploadedImageUrls = [];
+
+      // Use map instead of forEach to preserve the order of operations
+      await Promise.all(
+        selectedImages.map(async (file) => {
+          const storageRef = ref(
+            storage,
+            `room_images/${uploadImageRoom.id}/${file.name}`
+          );
+          const snapshot = await uploadBytes(storageRef, file);
+          const downloadURL = await getDownloadURL(snapshot.ref);
+          uploadedImageUrls.push(downloadURL);
+          console.log("File uploaded successfully. Download URL:", downloadURL);
+        })
+      );
+
+      let updateRoomObj = { ...uploadImageRoom };
+      updateRoomObj.imageUrls = uploadedImageUrls;
+
+      const response = await axios.put(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/vehicles/${uploadImageRoom.id}`,
+        updateRoomObj,
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        message.success("Images uploaded successfully");
+        setSelectedImages([]);
+        setIsImageModalVisible(false);
+        fetchVehicles();
+      }
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      message.error("Failed to upload images");
+    }
+  };
+  const handlePreview = (imageUrl) => {
+    setPreviewImage(imageUrl);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewImage(null);
+  };
 
   const columns = [
     { field: "make", headerName: "Make", width: 150 },
@@ -127,6 +209,29 @@ const VehicleManagementPage = () => {
       width: 200,
     },
     {
+      field: "imageUrls",
+      headerName: "Images",
+      width: 200,
+      renderCell: (params) => {
+        const imageUrls = params.value || [];
+        return (
+          <div
+            style={{ display: "flex", gap: "4px", justifyContent: "center" }}
+          >
+            {imageUrls.map((imageUrl, index) => (
+              <img
+                key={index}
+                src={imageUrl}
+                alt={`Room Image ${index}`}
+                style={{ width: "30px", height: "30px" }}
+                onClick={() => handlePreview(imageUrl)}
+              />
+            ))}
+          </div>
+        );
+      },
+    },
+    {
       field: "action",
       headerName: "Action",
       width: 150,
@@ -135,6 +240,11 @@ const VehicleManagementPage = () => {
           <Button
             onClick={() => handleEdit(params.row)}
             icon={<EditOutlined style={{ color: "blue" }} />}
+          />
+           <Button
+            onClick={() => handleOpenImageUpload(params.row)}
+            icon={<UploadOutlined style={{ color: "yellow" }} />}
+            color="default"
           />
           <Button
             onClick={() => confirmDelete(params.row.id)}
@@ -187,7 +297,7 @@ const VehicleManagementPage = () => {
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -195,7 +305,7 @@ const VehicleManagementPage = () => {
       setLoggedInUserType(userType);
     }
   }, []);
-  
+
   return (
     <LayoutNew userType={loggedInUserType}>
       <Layout>
@@ -219,15 +329,6 @@ const VehicleManagementPage = () => {
                 Vehicle Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewVehicle}
-              >
-                Add New Vehicle
-              </Button>
-            </div>
           </Space>
           <br />
           <br />
@@ -245,6 +346,15 @@ const VehicleManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={addNewVehicle}
+              >
+                Add New Vehicle
+              </Button>
+            </div>
           </div>
           <DataGrid
             rows={sortedRows}
@@ -278,6 +388,34 @@ const VehicleManagementPage = () => {
             }}
           >
             <VehicleForm form={form} onFinish={onFinish} />
+          </Modal>
+          <Modal
+            open={isImageModalVisible}
+            title="Upload Room Images"
+            okText="Upload"
+            cancelText="Cancel"
+            onCancel={handleCancelImageUpload}
+            onOk={handleImageUpload}
+          >
+            <Upload
+              multiple
+              listType="picture-card"
+              accept="image/*"
+              beforeUpload={() => false}
+              maxCount={4}
+              onChange={handleUpload}
+            >
+              <Button icon={<UploadOutlined />}>Select Image</Button>
+            </Upload>
+          </Modal>
+          <Modal
+            open={previewImage !== null}
+            footer={null}
+            onCancel={handleClosePreview}
+          >
+            {previewImage && (
+              <img src={previewImage} alt="Preview" style={{ width: "100%" }} />
+            )}
           </Modal>
         </Content>
       </Layout>

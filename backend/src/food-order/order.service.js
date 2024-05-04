@@ -1,7 +1,9 @@
 const Order = require("./order.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createOrder = async (orderData) => {
   try {
+    orderData.orderId = generateUniqueId("ORD")
     const order = new Order(orderData);
     await order.save();
     return order;

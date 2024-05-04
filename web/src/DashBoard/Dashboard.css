@@ -1,0 +1,11 @@
+.zoomed-card {
+    transition: transform 0.3s ease;
+  }
+  
+  .zoomed-card:hover {
+    transform: scale(1.1); /* Scale up to 110% on hover */
+  }
+ /* Add this CSS to your Dashboard.css file or any other global CSS file */
+.CardView a {
+  outline: none; /* Remove the outline */
+}

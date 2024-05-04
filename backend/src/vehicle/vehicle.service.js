@@ -1,8 +1,10 @@
 const Vehicle = require("./vehicle.model");
+const generateUniqueId = require("../common/generate-key");
 
-const createVehicle = async (VehicleData) => {
+const createVehicle = async (vehicleData) => {
   try {
-    const vehicle = new Vehicle(VehicleData);
+    vehicleData.vehicleId = generateUniqueId("VEH");
+    const vehicle = new Vehicle(vehicleData);
     await vehicle.save();
     return Vehicle;
   } catch (error) {

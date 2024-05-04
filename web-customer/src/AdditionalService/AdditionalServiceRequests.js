@@ -18,7 +18,7 @@ const AdditionalServiceRequests = () => {
     },
   };
   const columns = [
-    { field: "_id", headerName: "Request ID", width: 200 },
+    { field: "requestId", headerName: "Request ID", width: 200 },
     {
       field: "bookingDate",
       headerName: "Booking Date",

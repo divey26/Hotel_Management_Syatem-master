@@ -24,6 +24,7 @@ const eventRoutes = require("./src/events/event.routes");
 const eventRequestsRoutes = require("./src/event-request/event-request.routes");
 const attendanceRoutes = require("./src/attendance/attendance.routes");
 const leaveRequestRoutes = require("./src/leave-request/leave-request.routes");
+const payrollRoutes = require("./src/payroll/payroll.routes");
 const additionalServicesRoutes = require("./src/additional-service/additional-service.routes");
 const additionalServiceRequestsRoutes = require("./src/additional-service-request/additional-service-request.routes");
 
@@ -35,6 +36,7 @@ const connectToDatabase = async () => {
     throw error;
   }
 };
+
 mongoose.connection.on("disconnected", () => {
   console.log("MongoDB disconnected!");
 });
@@ -62,6 +64,7 @@ app.use("/api/event-locations", eventLocationsRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave-request", leaveRequestRoutes);
+app.use("/api/payroll", payrollRoutes);
 app.use("/api/event-requests", eventRequestsRoutes);
 app.use("/api/additional-services", additionalServicesRoutes);
 app.use("/api/additional-service-requests", additionalServiceRequestsRoutes);

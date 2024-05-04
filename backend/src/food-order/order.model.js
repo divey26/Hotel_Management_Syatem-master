@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema({
+  orderId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
@@ -47,6 +52,12 @@ const OrderSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  requests: {
+    type: String,
+  },
+  cancelReason: {
+    type: String,
   },
 });
 

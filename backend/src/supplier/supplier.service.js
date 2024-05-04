@@ -1,7 +1,9 @@
 const supplier = require("./supplier.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createSupplier = async (supplierData) => {
   try {
+    supplierData.supplierId = generateUniqueId("SUP")
     const newSupplier = await supplier.create(supplierData);
     return newSupplier;
   } catch (error) {

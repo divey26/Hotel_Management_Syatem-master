@@ -5,7 +5,6 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-
 import Login from "./Auth/login";
 import Register from "./Auth/Register";
 import ForgotPassword from "./Auth/ForgotPassword";
@@ -13,7 +12,7 @@ import ResetPassword from "./Auth/reset-password";
 import Dashboard from "./DashBoard/Dashboard";
 import Room from "./RoomReservation/Room";
 import Bookings from "./RoomReservation/Bookings";
-import Payments from "./RoomReservation/Payments";
+import RoomPayments from "./RoomReservation/RoomPayments";
 import MenuManagementPage from "./Restaurant/Menus";
 import OrdersPage from "./Restaurant/Orders";
 import OrderProcessingPage from "./Restaurant/OrderProcessingTracking";
@@ -33,21 +32,17 @@ import TravelRequestsManagementPage from "./Transport/TravelRequests";
 import AdditionalServiceRequestManagementPage from "./AdditionalService/AdditionalServiceRequest";
 import AdditionalServiceManagementPage from "./AdditionalService/AdditionalService";
 import EventLocationManagementPage from "./Events/EventLocations";
-
+import Payments from "./PaymentsAndIncoice/Payments";
 import Summa from "./Department/summa";
 import Scanner from "./Department/Scanner";
 import DetailsPage from "./Department/Details";
-
-
-
-
 
 function App() {
   const storedAuthToken = localStorage.getItem("authToken");
   const storedUserType = localStorage.getItem("loggedInUserType");
 
   const isAdminAuthenticated = () => {
-    return storedAuthToken && storedUserType === "admin";
+    return true;
   };
 
   return (
@@ -69,8 +64,10 @@ function App() {
           element={isAdminAuthenticated() ? <Bookings /> : <Navigate to="/" />}
         />
         <Route
-          path="/payments"
-          element={isAdminAuthenticated() ? <Payments /> : <Navigate to="/" />}
+          path="/room/payments"
+          element={
+            isAdminAuthenticated() ? <RoomPayments /> : <Navigate to="/" />
+          }
         />
 
         {/* menu management */}
@@ -132,8 +129,8 @@ function App() {
             )
           }
         />
-
-        <Route
+        
+         <Route
           path="/rfid"
           element={
             isAdminAuthenticated() ? (
@@ -275,6 +272,10 @@ function App() {
               <Navigate to="/" />
             )
           }
+        />
+        <Route
+          path="/payments"
+          element={isAdminAuthenticated() ? <Payments /> : <Navigate to="/" />}
         />
       </Routes>
     </Router>

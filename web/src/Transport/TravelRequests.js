@@ -17,15 +17,28 @@ import {
   EditOutlined,
   UserAddOutlined,
   DeleteOutlined,
+  FilePdfOutlined,
   CloseCircleOutlined,
   CheckCircleOutlined,
+  EnvironmentOutlined,
 } from "@ant-design/icons";
+import {
+  LoadScript,
+  GoogleMap,
+  DirectionsService,
+  DirectionsRenderer,
+  Marker,
+  InfoWindow,
+} from "@react-google-maps/api";
 import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
 import TravelRequestForm from "./AddEditTravelRequest";
 import axios from "axios";
 import moment from "moment";
 import { formatDate } from "../Common/date";
+import "jspdf-autotable";
+import { exportToPDF } from "../Common/report";
+import AssignDriverVehicleForm from "./AssignDriverAndVehicle";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -33,13 +46,23 @@ const token = localStorage.getItem("authToken");
 
 const TravelRequestsManagementPage = () => {
   const [form] = Form.useForm();
+  const [driverAssignForm] = Form.useForm();
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]); // State to hold filtered data
+  const [selectedItemForAssignDriver, setSelectedItemForAssignDriver] =
+    useState(null);
+  const [isOpenAssignDriverModal, setIsOpenAssignDriverModal] = useState(false);
   const [isAddTravelRequestsModalVisible, setIsAddTravelRequestsModalVisible] =
     useState(false);
   const [editingTravelRequests, setEditingTravelRequests] = useState(null);
-
+  const [trackModalVisible, setTrackModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [directions, setDirections] = useState(null);
+  const [infoWindowOpen, setInfoWindowOpen] = useState(false);
+  const [directionsFetched, setDirectionsFetched] = useState(false);
+  const libraries = ["places"];
+  const [mapLoaded, setMapLoaded] = useState(false);
   const fetchTravelRequestss = async () => {
     try {
       const response = await axios.get(
@@ -55,25 +78,57 @@ const TravelRequestsManagementPage = () => {
     fetchTravelRequestss();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
+  const generatePDF = () => {
+    const columnsToExport = columns.filter(
+      (col) => col.field !== "action" && col.field !== "imageUrls"
+    );
+    const prepareDataForReport = (data) => {
+      return data.map((menu) => {
+        const rowData = {};
+        columnsToExport.forEach((col) => {
+          rowData[col.field] = menu[col.field];
+        });
+        return rowData;
+      });
+    };
+
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Travel Request Report",
+    });
+  };
 
   const filterData = () => {
-    setFilteredData(data);
-  };
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
-  // Function to handle search input change
+      return orderAttributesMatch;
+    });
+    setFilteredData(filtered);
+  };
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
 
   const addNewTravelRequests = () => {
     setIsAddTravelRequestsModalVisible(true);
+  };
+
+  const handleCancelDriverAssign = () => {
+    setIsOpenAssignDriverModal(false);
+    setSelectedItemForAssignDriver(null);
+    driverAssignForm.resetFields();
   };
 
   const handleCancel = () => {
@@ -122,7 +177,11 @@ const TravelRequestsManagementPage = () => {
     });
   };
 
-  const handleAssignDriver = () => {};
+  const handleAssignDriver = (data) => {
+    setSelectedItemForAssignDriver(data);
+    setIsOpenAssignDriverModal(true);
+  };
+
   const handleConfirmation = (id) => {
     Modal.confirm({
       title: "Confirm Delete",
@@ -175,7 +234,80 @@ const TravelRequestsManagementPage = () => {
       fetchTravelRequestss();
     }
   };
+  const fetchDirections = (order) => {
+    if (window.google && window.google.maps) {
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsService.route(
+        {
+          origin: order.startupLocation,
+          destination: order.endupLocation,
+          travelMode: "DRIVING",
+        },
+        (result, status) => {
+          if (status === "OK") {
+            setDirections(result);
+          } else {
+            console.error("Directions request failed due to " + status);
+          }
+        }
+      );
+    } else {
+      console.error("Google Maps API not available.");
+    }
+  };
+  
+
+  const trackOrder = (order) => {
+    setSelectedOrder(order);
+    setTrackModalVisible(true);
+
+    // Fetch directions every time a new order is selected
+    fetchDirections(order);
+  };
   const columns = [
+    { field: "requestId", headerName: "Request ID", width: 200 },
+    {
+      field: "user",
+      headerName: "Customer",
+      width: 200,
+      renderCell: (params) => {
+        const ID = params.value.customerId;
+        const Name = params.value?.firstName + " " + params.value?.lastName;
+        return (
+          <div style={{ height: "100%", lineHeight: "normal" }}>
+            <p style={{ margin: 0, lineHeight: "1.5" }}>ID: {ID}</p>
+            <p style={{ margin: 0, lineHeight: "1.5" }}>Name: {Name}</p>
+          </div>
+        );
+      },
+    },
+    {
+      field: "driver",
+      headerName: "Driver",
+      width: 200,
+      renderCell: (params) => {
+        const driver = params.value;
+        if (!driver) {
+          return "None";
+        }
+        const Name = driver.driverId + " " + driver.firstName;
+        return Name;
+      },
+    },
+    {
+      field: "vehicle",
+      headerName: "Vehicle",
+      width: 200,
+      renderCell: (params) => {
+        const vehicle = params.value;
+        if (!vehicle) {
+          return "None";
+        }
+        const Name = vehicle.vehicleId + " " + vehicle?.registrationNumber;
+        return Name;
+      },
+    },
+
     { field: "travelType", headerName: "Request Type", width: 200 },
     { field: "startupLocation", headerName: "Startup Location", width: 250 },
     { field: "endupLocation", headerName: "Endup Location", width: 250 },
@@ -196,6 +328,7 @@ const TravelRequestsManagementPage = () => {
       },
     },
     { field: "passengers", headerName: "No Of Passengers", width: 150 },
+    { field: "requests", headerName: "Additional Requests", width: 150 },
     {
       field: "status",
       headerName: "Status",
@@ -250,8 +383,12 @@ const TravelRequestsManagementPage = () => {
           {params.row.status === "Confirmed" && (
             <Tooltip title="Assign driver & vehicle">
               <Button
-                onClick={() => handleAssignDriver(params.row.id)}
+                onClick={() => handleAssignDriver(params.row)}
                 icon={<UserAddOutlined style={{ color: "yellow" }} />}
+              />
+              <Button
+                onClick={() => trackOrder(params.row)}
+                icon={<EnvironmentOutlined style={{ color: "green" }} />}
               />
             </Tooltip>
           )}
@@ -268,6 +405,23 @@ const TravelRequestsManagementPage = () => {
 
   const onFinish = (values) => {
     onFinishAddTravelRequests(values);
+  };
+
+  const assignDriver = async (values) => {
+    try {
+      const apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/travel-requests/${selectedItemForAssignDriver.id}`;
+      await axios.put(apiUrl, {
+        ...values,
+      });
+      message.success("Driver assigned successfully");
+      driverAssignForm.resetFields();
+      setSelectedItemForAssignDriver(null);
+      setIsOpenAssignDriverModal(false);
+      fetchTravelRequestss();
+    } catch (error) {
+      console.error("Error assign driver", error);
+      message.error("Failed to assign driver.");
+    }
   };
 
   const onFinishAddTravelRequests = async (values) => {
@@ -308,7 +462,7 @@ const TravelRequestsManagementPage = () => {
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -341,13 +495,16 @@ const TravelRequestsManagementPage = () => {
               </Title>
             </Space>
             <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewTravelRequests}
-              >
-                Add New Travel Request
-              </Button>
+              {/* Export buttons */}
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={generatePDF}
+                >
+                  Export to PDF
+                </Button>
+              </Space>
             </div>
           </Space>
           <br />
@@ -366,6 +523,15 @@ const TravelRequestsManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={addNewTravelRequests}
+              >
+                Add New Travel Request
+              </Button>
+            </div>
           </div>
           <DataGrid
             rows={sortedRows}
@@ -403,6 +569,93 @@ const TravelRequestsManagementPage = () => {
             }}
           >
             <TravelRequestForm form={form} onFinish={onFinish} />
+          </Modal>
+          <Modal
+            open={isOpenAssignDriverModal}
+            title="Assign Driver"
+            okText="Assign"
+            cancelText="Cancel"
+            onCancel={handleCancelDriverAssign}
+            onOk={() => {
+              driverAssignForm
+                .validateFields()
+                .then((values) => {
+                  assignDriver(values);
+                })
+                .catch((errorInfo) => {
+                  console.log("Validation Failed:", errorInfo);
+                });
+            }}
+          >
+            <AssignDriverVehicleForm
+              form={driverAssignForm}
+              onFinish={assignDriver}
+            />
+          </Modal>
+
+          <Modal
+            visible={trackModalVisible}
+            onCancel={() => setTrackModalVisible(false)}
+            footer={null}
+            title={
+              <div>
+                <p>
+                  <span style={{ color: "blue" }}>From:</span>{" "}
+                  {selectedOrder ? selectedOrder.startupLocation : ""}
+                </p>
+                <p>
+                  <span style={{ color: "blue" }}>To:</span>{" "}
+                  {selectedOrder ? selectedOrder.endupLocation : ""}
+                </p>
+                <p>
+                  Track Your Order{" "}
+                  <span style={{ color: "red" }}>
+                    {selectedOrder
+                      ? `- Tracking ID: ${selectedOrder.requestId}`
+                      : ""}
+                  </span>{" "}
+                  {directions &&
+                    directions.routes &&
+                    directions.routes.length > 0 &&
+                    `- Distance: ${directions.routes[0].legs[0].distance.text}, Duration: ${directions.routes[0].legs[0].duration.text}`}
+                </p>
+              </div>
+            }
+            width={800}
+          >
+            {selectedOrder && ( // Render the Google Maps components only if selectedOrder and mapLoaded are true
+              <div style={{ height: "400px" }}>
+                <LoadScript
+                  googleMapsApiKey="AIzaSyD4IT9MWL9Sz5gm6zTrVJudjYuhbvOC4M0"
+                  libraries={libraries}
+                >
+                  <GoogleMap
+                    mapContainerStyle={{ height: "100%", width: "100%" }}
+                    center={{
+                      lat: selectedOrder.startupLocation.lat,
+                      lng: selectedOrder.startupLocation.lng,
+                    }} // Set a default center for the map
+                    zoom={10}
+                  >
+                    {directions && (
+                      <DirectionsRenderer directions={directions} />
+                    )}
+                    <Marker
+                      position={{
+                        lat: selectedOrder.startupLocation.lat,
+                        lng: selectedOrder.startupLocation.lng,
+                      }}
+                    />
+                    <Marker
+                      position={{
+                        lat: selectedOrder.endupLocation.lat,
+                        lng: selectedOrder.endupLocation.lng,
+                      }}
+                    />
+                  </GoogleMap>
+                </LoadScript>
+              </div>
+            )}
           </Modal>
         </Content>
       </Layout>

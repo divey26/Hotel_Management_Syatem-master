@@ -1,9 +1,11 @@
 const AdditionalServicerequest = require("./additional-service-request.model");
+const generateUniqueId = require("../common/generate-key");
 
-const createAdditionalServicerequest = async (AdditionalServicerequestData) => {
+const createAdditionalServicerequest = async (data) => {
   try {
+    data.requestId = generateUniqueId("ADSR");
     const newAdditionalServicerequest = await AdditionalServicerequest.create(
-      AdditionalServicerequestData
+      data
     );
     return newAdditionalServicerequest;
   } catch (error) {

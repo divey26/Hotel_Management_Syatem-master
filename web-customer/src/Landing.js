@@ -7,6 +7,7 @@ import {
   Modal,
   Typography,
   Rate,
+  Input,
   InputNumber,
   message,
 } from "antd";
@@ -42,6 +43,18 @@ const FeedbackCardContainer = styled.div`
   .comment {
     font-size: 16px;
     text-align: center;
+  }
+`;
+
+const FeedbackFormContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 `;
 
@@ -99,21 +112,22 @@ const Landing = () => {
   const [selectedRoom, setSelectedRoom] = useState(false);
   const [openBookingForm, setOpenBooking] = useState(false);
   const [form] = Form.useForm();
-
-  const fetchRooms = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/rooms`
-      );
-      setRoomData(response.data.data);
-    } catch (error) {
-      console.error("Error fetching rooms:", error);
-    }
-  };
+  const [feedBackForm] = Form.useForm();
+  const [rating, setRating] = useState(0);
+  // const fetchRooms = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${process.env.REACT_APP_BACKEND_BASE_URL}/rooms`
+  //     );
+  //     setRoomData(response.data.data);
+  //   } catch (error) {
+  //     console.error("Error fetching rooms:", error);
+  //   }
+  // };
 
   useEffect(() => {
-    fetchRooms();
-  }, []);
+    setRoomData([]);
+  }, [checkInDate && checkOutDate]);
 
   const hotelImages = [
     "https://c4.wallpaperflare.com/wallpaper/787/399/647/life-resort-travel-vacation-wallpaper-preview.jpg",
@@ -139,6 +153,29 @@ const Landing = () => {
     },
   ];
 
+  const handleRatingChange = (value) => {
+    setRating(value);
+  };
+
+  const handleSubmit = async (values) => {
+    // Combine feedback values with rating
+    const feedbackData = { ...values, rating };
+
+    try {
+      // Pass feedback data to the parent component for handling
+      // await onFinish(feedbackData);
+      // Reset form after successful submission
+      feedBackForm.resetFields();
+      // Show success message
+      message.success("Thank you for your feedback!");
+      // Reset rating
+      setRating(0);
+    } catch (error) {
+      // Show error message if submission fails
+      message.error("Failed to submit feedback. Please try again later.");
+    }
+  };
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % hotelImages.length);
@@ -147,14 +184,51 @@ const Landing = () => {
     return () => clearInterval(intervalId);
   }, [hotelImages.length]);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!checkInDate || !checkOutDate) {
       Swal.fire({
         icon: "error",
-        title: "Oops...",
-        text: "Please select both check-in and check-out dates!",
+        title: "Dates Error",
+        text: "Please select dates",
       });
-      return;
+    } else if (
+      checkInDate.isBefore(new Date(), "day") ||
+      checkInDate.isBefore(new Date(), "day")
+    ) {
+      Swal.fire({
+        icon: "error",
+        title: "Dates Error",
+        text: "Dates cannot be in past",
+      });
+    } else if (checkOutDate.isBefore(checkInDate, "day")) {
+      Swal.fire({
+        icon: "error",
+        title: "Dates Error",
+        text: "Check-out date must be after check-in date",
+      });
+    } else {
+      const payload = {
+        checkInDate: checkInDate,
+        checkOutDate: checkOutDate,
+        noOfPersons: capacity,
+      };
+
+      await axios
+        .post(
+          `${process.env.REACT_APP_BACKEND_BASE_URL}/rooms/available-rooms`,
+          payload
+        )
+        .then((response) => {
+          setRoomData(response.data.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching available rooms:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Failed to fetch available rooms. Please try again later...",
+          });
+        });
     }
   };
 
@@ -236,15 +310,18 @@ const Landing = () => {
           value={checkOutDate}
           onChange={(date) => setCheckOutDate(date)}
         />
+
         <InputNumber
-          placeholder="Room Size"
+          placeholder="Capacity"
           min={1}
           max={10}
           defaultValue={1}
           value={capacity}
           style={{ marginRight: "10px", width: 100 }}
           onChange={(value) => setCapacity(value)}
+          type="number"
         />
+
         <Button type="primary" onClick={handleSearch}>
           <SearchOutlined />
           Search
@@ -253,91 +330,88 @@ const Landing = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${roomData.length}, minmax(0, 1fr))`,
+          gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
           gap: "20px",
           margin: "20px",
           justifyContent: "center",
         }}
       >
-        {roomData.map((room, index) => (
-          <div
-            key={index}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              overflow: "hidden",
-            }}
-          >
-            <Carousel className="room-slider" autoplay>
-              {room.imageUrls.map((imageUrl, imageIndex) => (
-                <div key={imageIndex}>
-                  <img
-                    className="room-image"
-                    alt={`${room.description} - Image ${imageIndex + 1}`}
-                    src={imageUrl}
-                    style={{
-                      width: "100%",
-                      height: "200px",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-              ))}
-            </Carousel>
-            <div style={{ padding: "16px" }}>
-              <Typography.Title
-                style={{
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  marginBottom: "8px",
-                }}
-              >
-                {room.description}
-              </Typography.Title>
-              <p style={{ fontSize: "16px", marginBottom: "8px" }}>
-                with {room.amenities.join(", ")}
-              </p>
-              <p
-                style={{ fontSize: "16px", color: "#666", marginBottom: "8px" }}
-              >
-                for {room.capacity} person
-              </p>
-              <p
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  marginBottom: "8px",
-                }}
-              >
-                {room.price} LKR
-              </p>
-              <p
-                style={{
-                  fontSize: "14px",
-                  color: "#777",
-                  marginBottom: "16px",
-                }}
-              >
-                {room.availability ? "Available" : "Not Available"}
-              </p>
-              <Button type="primary" onClick={() => handleBookClick(room)}>
-                Book
-              </Button>
+        {roomData &&
+          roomData.map((room, index) => (
+            <div
+              key={index}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                overflow: "hidden",
+              }}
+            >
+              <Carousel className="room-slider" autoplay>
+                {room.imageUrls.map((imageUrl, imageIndex) => (
+                  <div key={imageIndex}>
+                    <img
+                      className="room-image"
+                      alt={`${room.description} - Image ${imageIndex + 1}`}
+                      src={imageUrl}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                ))}
+              </Carousel>
+              <div style={{ padding: "16px" }}>
+                <Typography.Title
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  {room.description}
+                </Typography.Title>
+                <p style={{ fontSize: "16px", marginBottom: "8px" }}>
+                  with {room.amenities.join(", ")}
+                </p>
+                <p
+                  style={{
+                    fontSize: "16px",
+                    color: "#666",
+                    marginBottom: "8px",
+                  }}
+                >
+                  for {room.capacity} person
+                </p>
+                <p
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  {room.price} LKR
+                </p>
+                {room.availability && (
+                  <Button type="primary" onClick={() => handleBookClick(room)}>
+                    Book
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
       <Container>
         <TextContainer>
-          <h2>Nashville's Premier Boutique Hotel</h2>
-          <h3>Studio 154 Luxury Hotel & SKYDECK</h3>
+          <h2>Valampuri Hotel</h2>
+          <h3>148/10, Station Road, Jaffna, Sri Lanka.</h3>
           <p>
-            Studio 154 Luxury Hotel & SKYDECK is downtown Nashville’s first
-            state-of-the-art boutique hotel that utilizes digital key technology
-            to perfectly overhaul the modern vacationing experience. Our guests
-            enjoy the city from a prime location that is just steps away from
-            Broadway as well as the Ryman Auditorium, Bridgestone Arena, and the
-            Ascend Amphitheater.
+            Welcome to very special hotel in Jaffna Peninsula, Located adjoining
+            with Jaffna Central Railway Station. Valampuri hotel offers 32
+            spacious deluxe room including 2 Suites. Relax and rejuvenate in our
+            Swimming pool, gym and spa. This hotel is part of Green Grass Hotel
+            & Restaurant.
           </p>
           <p>
             The original exposed brick walls from the mid 19th century,
@@ -345,7 +419,7 @@ const Landing = () => {
             the luxury furnishings provide a warm contemporary feel.
           </p>
           <p>
-            At SKYDECK, our hotel’s exclusive rooftop venue, guests have a
+            At Valampuri, our hotel’s exclusive rooftop venue, guests have a
             front-row seat and birds-eye view of Nissan Stadium, CMA Fest,
             concerts on the waterfront, fireworks, and other major Nashville
             events.
@@ -386,7 +460,25 @@ const Landing = () => {
           ))}
         </div>
       </FeedbackSection>
-
+      <FeedbackFormContainer>
+        <h2>Leave Feedback</h2>
+        <Form form={feedBackForm} onFinish={handleSubmit}>
+          <Form.Item
+            name="comment"
+            rules={[{ required: true, message: "Please enter your feedback" }]}
+          >
+            <Input.TextArea placeholder="Your feedback..." />
+          </Form.Item>
+          <Form.Item>
+            <Rate allowHalf onChange={handleRatingChange} value={rating} />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Submit Feedback
+            </Button>
+          </Form.Item>
+        </Form>
+      </FeedbackFormContainer>
       <div style={{ height: "400px", width: "100%", overflow: "hidden" }}>
         <Carousel autoplay>
           {hotelImages.map((imageUrl, index) => (
