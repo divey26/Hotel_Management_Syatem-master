@@ -31,10 +31,11 @@ const OrdersPage = () => {
       field: "user",
       headerName: "Customer",
       width: 150,
-      renderCell: (params) => {
-        return params.value.firstName;
-      },
+      renderCell: (params) => (
+        params.value ? params.value.firstName : "N/A"
+      ),
     },
+    
     {
       field: "items",
       headerName: "Items",

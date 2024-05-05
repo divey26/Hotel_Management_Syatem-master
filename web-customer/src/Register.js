@@ -25,7 +25,9 @@ const Register = () => {
           showConfirmButton: false,
           timer: 1000,
         }).then(() => {
-          localStorage.setItem("userId", response.data.data._id);
+          const authToken = response.data.token;
+          localStorage.setItem("customerId", response.data.data._id);
+          localStorage.setItem("customerAuthToken", authToken);          
           navigate("/");
         });
       }

@@ -212,8 +212,8 @@ const AdditionalServiceRequestManagementPage = () => {
       headerName: "Customer",
       width: 200,
       renderCell: (params) => {
-        const ID = params.value._id;
-        const Name = params.value.firstName + " " + params.value.lastName;
+        const ID = params.value?._id;
+        const Name = params.value?.firstName + " " + params.value?.lastName;
         return (
           <div style={{ height: "100%", lineHeight: "normal" }}>
             <p style={{ margin: 0, lineHeight: "1.5" }}>ID: {ID}</p>
@@ -227,7 +227,12 @@ const AdditionalServiceRequestManagementPage = () => {
       headerName: "Service",
       width: 150,
       renderCell: (params) => {
-        return params.value.name;
+        if(params.value){
+          return params.value.name;
+        }
+        else{
+          return "None"
+        }
       },
     },
     {

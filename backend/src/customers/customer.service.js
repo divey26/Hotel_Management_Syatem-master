@@ -19,8 +19,15 @@ const register = async (customerData) => {
       zipCode: customerData.zipCode,
     });
     customer.customerId = generateUniqueId("CUS");
-    await customer.save();
-    return customer;
+    const createdCustomer = await customer.save();
+    const token = jwt.sign(
+      { customerId: createdCustomer._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+    return { createdCustomer, token };
   } catch (error) {
     throw error;
   }
