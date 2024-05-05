@@ -82,29 +82,22 @@ const Orders = () => {
         <strong>
           {params.row.status === "Pending" && (
             <Button
-              type="link"
-              icon={
-                <MoneyCollectFilled
-                  style={{ color: "green", fontSize: "30px" }}
-                />
-              }
+              type="primary"
               onClick={() => handlePayment(params.row)}
-              style={{ padding: "0" }}
-              size="large"
-            />
+              style={{ backgroundColor: "green", borderColor: "green" }}
+            >
+              Pay
+            </Button>
           )}
-          {params.row.status === "Confirmed" && (
+          &nbsp;
+          {params.row.status !== "Cancelled" && (
             <Button
-              type="link"
-              icon={
-                <CloseCircleOutlined
-                  style={{ color: "red", fontSize: "30px" }}
-                />
-              }
+              type="primary"
               onClick={() => handleCancelConfirmation(params.row)}
-              style={{ padding: "0" }}
-              size="large"
-            />
+              style={{ backgroundColor: "red", borderColor: "red" }}
+            >
+              Cancel
+            </Button>
           )}
         </strong>
       ),

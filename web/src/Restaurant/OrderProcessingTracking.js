@@ -233,6 +233,9 @@ const OrderProcessingPage = () => {
                   <strong>Delivery Address:</strong> {order.deliveryAddress}
                 </p>
                 <p>
+                  <strong>Customer Phone No:</strong> {order.phoneNumber}
+                </p>
+                <p>
                   <strong>Total Price:</strong> {order.totalPrice.toFixed(2)}{" "}
                   LKR
                 </p>

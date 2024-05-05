@@ -27,6 +27,7 @@ const FoodOrderingPage = () => {
   const storedAuthToken = localStorage.getItem("customerAuthToken");
   const [menuItems, setMenuItems] = useState([]);
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [form] = Form.useForm();
   const [cartItems, setCartItems] = useState({});
   const [visible, setVisible] = useState(false);
@@ -104,6 +105,7 @@ const FoodOrderingPage = () => {
           items: orderItems,
           totalPrice: totalPrice,
           deliveryAddress,
+          phoneNumber: customerPhone,
         });
 
         message.success("Order placed successfully!");
@@ -189,6 +191,9 @@ const FoodOrderingPage = () => {
                 ))}
               </Carousel>
               <p>{menuItem.description}</p>
+              <p>
+                <strong>{menuItem.price} LKR</strong>
+              </p>
               <Space>
                 <Form form={form} name="quantity_form">
                   <Form.Item name={menuItem._id} initialValue={1}>
@@ -215,6 +220,18 @@ const FoodOrderingPage = () => {
             </List.Item>
           )}
         />
+
+        <Form.Item
+          name="phone"
+          label="Phone"
+          rules={[{ required: true, message: "Please input phone!" }]}
+        >
+          <Input
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+          />
+        </Form.Item>
+
         <Form.Item
           label="Delivery Address"
           name="deliveryAddress"

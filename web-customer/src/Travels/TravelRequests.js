@@ -11,7 +11,7 @@ import { formatDate } from "../Common/date";
 const TravelRequests = () => {
   const token = localStorage.getItem("customerId");
   const [data, setTravelRequestsData] = useState([]);
-  
+
   const columns = [
     { field: "requestId", headerName: "Request ID", width: 150 },
     { field: "startupLocation", headerName: "Pickup", width: 200 },
@@ -63,7 +63,12 @@ const TravelRequests = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_BASE_URL}/travel-requests/user/${token}`
       );
-      setTravelRequestsData(response.data.data);
+
+      const filteredData = response.data.data.filter(
+        (request) => request.travelType !== "food-delivery"
+      );
+
+      setTravelRequestsData(filteredData);
     } catch (error) {
       notification.error({
         message: "Failed to Retrieve Data",

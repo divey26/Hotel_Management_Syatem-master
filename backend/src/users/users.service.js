@@ -8,20 +8,33 @@ const generateUniqueId = require("../common/generate-key");
 const register = async (userData) => {
   try {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const employee = await employeeService.getOneByEmployeeId(
-      userData.employee
-    );
+    if(userData.employee){
+      const employee = await employeeService.getOneByEmployeeId(
+        userData.employee
+      );
+  
+      const user = new User({
+        username: userData.username,
+        email: userData.email,
+        password: hashedPassword,
+        userType: userData.userType,
+        employee: employee._id,
+      });
+      user.userId = generateUniqueId("USR");
+      await user.save();
+      return user;
+    }else{
+      const user = new User({
+        username: userData.username,
+        email: userData.email,
+        password: hashedPassword,
+        userType: userData.userType,
+      });
+      user.userId = generateUniqueId("USR");
+      await user.save();
+      return user;
+    }
 
-    const user = new User({
-      username: userData.username,
-      email: userData.email,
-      password: hashedPassword,
-      userType: userData.userType,
-      employee: employee._id,
-    });
-    user.userId = generateUniqueId("USR");
-    await user.save();
-    return user;
   } catch (error) {
     throw error;
   }

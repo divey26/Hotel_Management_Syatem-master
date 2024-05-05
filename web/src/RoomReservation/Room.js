@@ -436,6 +436,7 @@ const RoomManagementPage = () => {
               multiple
               listType="picture-card"
               accept="image/*"
+              value = {selectedImages}
               beforeUpload={() => false}
               maxCount={4}
               onChange={handleUpload}
