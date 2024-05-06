@@ -269,7 +269,7 @@ const AdditionalServiceRequestManagementPage = () => {
     {
       field: "action",
       headerName: "Action",
-      width: 150,
+      width: 700,
       renderCell: (params) => (
         <div>
           {params.row.status === "Pending" && (
@@ -278,14 +278,14 @@ const AdditionalServiceRequestManagementPage = () => {
                 <Button
                   icon={<CheckCircleOutlined style={{ color: "green" }} />}
                   onClick={() => handleConfirmation(params.row.id)}
-                />
+                >Confirm request</Button>
               </Tooltip>
 
               <Tooltip title="Cancel request">
                 <Button
                   icon={<CloseCircleOutlined style={{ color: "red" }} />}
                   onClick={() => handleCancel(params.row.id)}
-                />
+                  >Cancel request</Button>
               </Tooltip>
             </>
           )}
@@ -293,7 +293,7 @@ const AdditionalServiceRequestManagementPage = () => {
             <Button
               onClick={() => confirmDelete(params.row.id)}
               icon={<DeleteOutlined style={{ color: "red" }} />}
-            />
+              >Delete request</Button>
           </Tooltip>
         </div>
       ),
