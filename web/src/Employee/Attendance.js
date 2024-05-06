@@ -83,6 +83,7 @@ const Attendance = () => {
   const handleSearch = (e) => {
     setSearchKeyword(e.target.value);
   };
+  
 
   useEffect(() => {
     if (filterDate) {
@@ -96,18 +97,27 @@ const Attendance = () => {
   }, [filterDate]);
 
   useEffect(() => {
-    if (searchKeyword) {
-      const filteredRecords = searchKeyword
-        ? records.filter((record) =>
-            record.employee.toLowerCase().includes(searchKeyword.toLowerCase())
-          )
-        : records;
-
+    if (searchKeyword || filterDate) {
+      let filteredRecords = records;
+  
+      if (searchKeyword) {
+        filteredRecords = filteredRecords.filter((record) =>
+          record.employeeName.toLowerCase().includes(searchKeyword.toLowerCase())
+        );
+      }
+  
+      if (filterDate) {
+        filteredRecords = filteredRecords.filter((record) =>
+          moment(record.date).isSame(filterDate, "day")
+        );
+      }
+  
       setRecords(filteredRecords);
     } else {
       fetchRecords();
     }
-  }, [searchKeyword]);
+  }, [searchKeyword, filterDate]);
+  
 
   const foundRecordForToday = (records) => {
     const today = new Date();
@@ -293,9 +303,7 @@ const Attendance = () => {
           initialValues={attendance}
           onValuesChange={handleFormChange}
         >
-          <Form.Item>
-            <DatePicker onChange={handleDateChange} />
-          </Form.Item>
+          
           <Form.Item>
             <Input
               placeholder="Search..."

@@ -100,7 +100,7 @@ const TravelRequestsManagementPage = () => {
 
     const reportData = prepareDataForReport(filteredData);
     exportToPDF(columnsToExport, reportData, {
-      title: "Travel Request Report",
+      title: "Vehicle Report",
     });
   };
 
@@ -271,8 +271,9 @@ const TravelRequestsManagementPage = () => {
       headerName: "Customer",
       width: 200,
       renderCell: (params) => {
-        const ID = params.value.customerId;
-        const Name = params.value?.firstName + " " + params.value?.lastName;
+        const customer = params.value;
+        const ID = customer?.customerId;
+        const Name = customer?.firstName + " " + customer?.lastName;
         return (
           <div style={{ height: "100%", lineHeight: "normal" }}>
             <p style={{ margin: 0, lineHeight: "1.5" }}>ID: {ID}</p>
@@ -280,6 +281,7 @@ const TravelRequestsManagementPage = () => {
           </div>
         );
       },
+      
     },
     {
       field: "driver",

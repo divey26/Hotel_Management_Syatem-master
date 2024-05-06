@@ -159,6 +159,7 @@ const PayrollPage = () => {
 
       if (response.data.success) {
         form.resetFields();
+        setNetSalary(null);
         setIsModalVisible(false);
         const statusText = selectedRow ? "updated" : "added";
         message.success(`Payroll ${statusText} successfully`);

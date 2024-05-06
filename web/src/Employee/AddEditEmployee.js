@@ -4,6 +4,21 @@ import { Form, Row, Col, Input, Select, Button } from "antd";
 const { Option } = Select;
 
 const EmployeeForm = ({ form, onFinish }) => {
+  const validatePhoneNumber = (rule, value, callback) => {
+    if (value && !/^[0-9]{10}$/.test(value)) {
+      callback("Please input a valid 10-digit phone number!");
+    } else {
+      callback();
+    }
+  };
+
+  const validateEmail = (rule, value, callback) => {
+    if (value && !/^\S+@\S+\.\S+$/.test(value)) {
+      callback("Please input a valid email address!");
+    } else {
+      callback();
+    }
+  };
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <Row gutter={[16, 16]}>
@@ -25,11 +40,14 @@ const EmployeeForm = ({ form, onFinish }) => {
             <Input />
           </Form.Item>
         </Col>
-        <Col span={12}>
+         <Col span={12}>
           <Form.Item
             name="email"
             label="Email"
-            rules={[{ required: true, message: "Please input email!" }]}
+            rules={[
+              { required: true, message: "Please input email!" },
+              { validator: validateEmail },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -38,7 +56,10 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="phone"
             label="Phone"
-            rules={[{ required: true, message: "Please input phone!" }]}
+            rules={[
+              { required: true, message: "Please input phone!" },
+              { validator: validatePhoneNumber },
+            ]}
           >
             <Input />
           </Form.Item>

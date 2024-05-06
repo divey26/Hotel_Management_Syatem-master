@@ -17,6 +17,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   UploadOutlined,
+  FilePdfOutlined,
 } from "@ant-design/icons";
 import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
@@ -25,7 +26,8 @@ import axios from "axios";
 import { storage } from "../Common/firebase";
 import { ref, uploadBytes } from "firebase/storage";
 import { getDownloadURL } from "firebase/storage";
-
+import "jspdf-autotable";
+import { exportToPDF } from "../Common/report";
 const { Title } = Typography;
 const { Content } = Layout;
 const token = localStorage.getItem("authToken");
@@ -258,6 +260,25 @@ const VehicleManagementPage = () => {
   const onFinish = (values) => {
     onFinishAddVehicle(values);
   };
+  const generatePDF = () => {
+    const columnsToExport = columns.filter(
+      (col) => col.field !== "action" && col.field !== "imageUrls"
+    );
+    const prepareDataForReport = (data) => {
+      return data.map((menu) => {
+        const rowData = {};
+        columnsToExport.forEach((col) => {
+          rowData[col.field] = menu[col.field];
+        });
+        return rowData;
+      });
+    };
+
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Travel Request Report",
+    });
+  };
 
   const onFinishAddVehicle = async (values) => {
     try {
@@ -329,6 +350,18 @@ const VehicleManagementPage = () => {
                 Vehicle Management
               </Title>
             </Space>
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+              {/* Export buttons */}
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={generatePDF}
+                >
+                  Export to PDF
+                </Button>
+              </Space>
+              </div>
           </Space>
           <br />
           <br />
