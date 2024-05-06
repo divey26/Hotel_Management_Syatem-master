@@ -94,7 +94,7 @@ const EmployeeManagementPage = () => {
 
     const reportData = prepareDataForReport(filteredData);
     exportToPDF(columnsToExport, reportData, {
-      title: "Menus Report",
+      title: "Employee Report",
     });
   };
 
