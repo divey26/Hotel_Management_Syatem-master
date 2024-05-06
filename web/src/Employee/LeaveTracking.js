@@ -42,7 +42,22 @@ const LeaveTrackingPage = () => {
       setLoggedInUserType(userType);
     }
   }, []);
-
+  const validateCheckInDate = (_, value) => {
+    if (value && value.isBefore(new Date(), "day")) {
+      return Promise.reject("Check-in date cannot be in the past");
+    }
+    return Promise.resolve();
+  };
+  const validateCheckOutDate = (_, value) => {
+    const checkInDate = form.getFieldValue("checkInDate");
+    if (value && checkInDate && value.isBefore(checkInDate, "day")) {
+      return Promise.reject("Check-out date must be after check-in date");
+    }
+    if (value && value.isBefore(new Date(), "day")) {
+      return Promise.reject("Check-out date cannot be in the past");
+    }
+    return Promise.resolve();
+  };
   const fetchData = async () => {
     try {
       let apiUrl;
@@ -99,13 +114,16 @@ const LeaveTrackingPage = () => {
       const filteredData = data.filter(
         (leave) =>
           (leave.employeeName && leave.employeeName.toLowerCase().includes(searchText.toLowerCase())) ||
-          (leave.reason && leave.reason.toLowerCase().includes(searchText.toLowerCase()))
+          (leave.reason && leave.reason.toLowerCase().includes(searchText.toLowerCase())) ||
+          (leave.startDate && leave.startDate.includes(searchText)) ||
+          (leave.endDate && leave.endDate.includes(searchText))
       );
       setData(filteredData);
     } else {
       fetchData();
     }
   }, [searchText]);
+  
   
 
   const columns = [
@@ -290,6 +308,7 @@ const LeaveTrackingPage = () => {
                 label="Start Date"
                 rules={[
                   { required: true, message: "Please select start date!" },
+                  { validator: validateCheckInDate },
                 ]}
               >
                 <DatePicker style={{ width: "100%" }} />
@@ -297,7 +316,9 @@ const LeaveTrackingPage = () => {
               <Form.Item
                 name="endDate"
                 label="End Date"
-                rules={[{ required: true, message: "Please select end date!" }]}
+                rules={[{ required: true, message: "Please select end date!" },
+                { validator: validateCheckInDate },
+                ]}
               >
                 <DatePicker style={{ width: "100%" }} />
               </Form.Item>
