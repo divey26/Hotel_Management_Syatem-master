@@ -55,7 +55,7 @@ const AdditionalServiceRequests = () => {
               onClick={() => handleCancelConfirmation(params.row)}
               style={{ padding: "0" }}
               size="large"
-            />
+            >Cancel</Button>
           )}
         </strong>
       ),

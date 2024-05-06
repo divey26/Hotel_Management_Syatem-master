@@ -216,8 +216,8 @@ const AdditionalServiceRequestManagementPage = () => {
         const Name = params.value?.firstName + " " + params.value?.lastName;
         return (
           <div style={{ height: "100%", lineHeight: "normal" }}>
-            <p style={{ margin: 0, lineHeight: "1.5" }}>ID: {ID}</p>
-            <p style={{ margin: 0, lineHeight: "1.5" }}>Name: {Name}</p>
+            <p style={{ margin: 0, lineHeight: "1.5" }} hidden>ID: {ID}</p>
+            <p style={{ margin: 0, lineHeight: "1.5" }}>{Name}</p>
           </div>
         );
       },
