@@ -141,7 +141,7 @@ const OrdersPage = () => {
     const prepareDataForReport = (data) => {
       return data.map((order) => {
         const rowData = {};
-        const customerName = `${order.user.firstName} ${order.user.lastName}`;
+        const customerName = `${ order.user ? order.user.firstName : "N/A"} ${order.user ? order.user.lastName : "N/A"}`;
 
         const items = order.items?.map(
           (item, index) => `${item.name} (${item.quantity})`
@@ -170,23 +170,28 @@ const OrdersPage = () => {
 
   const filterData = () => {
     const filtered = data.filter((row) => {
-      const orderAttributesMatch = Object.values(row).some((value) =>
-        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      const itemMatch = row.items.some(
-        (item) =>
+      const orderAttributesMatch = Object.values(row).some((value) => {
+        if (value === null) {
+          return false; // Skip null values
+        }
+        return value.toString().toLowerCase().includes(searchQuery.toLowerCase());
+      });
+  
+      const itemMatch = row.items.some((item) => {
+        if (item.name === null || item.quantity === null) {
+          return false; // Skip null values
+        }
+        return (
           item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.quantity
-            .toString()
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-      );
-
+          item.quantity.toString().toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
+  
       return orderAttributesMatch || itemMatch;
     });
     setFilteredData(filtered);
   };
+  
 
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
