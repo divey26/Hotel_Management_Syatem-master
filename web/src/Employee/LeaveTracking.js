@@ -98,15 +98,15 @@ const LeaveTrackingPage = () => {
     if (searchText) {
       const filteredData = data.filter(
         (leave) =>
-          leave.employee.toLowerCase().includes(searchText.toLowerCase()) ||
-          leave.status.toLowerCase().includes(searchText.toLowerCase()) ||
-          leave.reason.toLowerCase().includes(searchText.toLowerCase())
+          (leave.employeeName && leave.employeeName.toLowerCase().includes(searchText.toLowerCase())) ||
+          (leave.reason && leave.reason.toLowerCase().includes(searchText.toLowerCase()))
       );
       setData(filteredData);
     } else {
       fetchData();
     }
   }, [searchText]);
+  
 
   const columns = [
     ...(userType === "admin"
@@ -156,7 +156,7 @@ const LeaveTrackingPage = () => {
       key: "action",
       render: (_, record) => (
         <Space>
-          {(userType === "admin" && !record.status) && (
+          {(userType === "admin" && record.status == "Pending") && (
             <Button onClick={() => approveRequest(record._id)}>Approve</Button>
           )}
           {userType === "user" &&
