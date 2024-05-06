@@ -82,7 +82,7 @@ const AdditionalServiceRequestManagementPage = () => {
       return data.map((order) => {
         const rowData = {};
         const customerName = `${order.user.firstName} ${order.user.lastName}`;
-        const Service = order.service.name;
+        const Service = order.service ? order.service.name : "N/A";
         columnsToExport.forEach((col) => {
           if (col.field === "bookingDate") {
             rowData[col.field] = formatDate(order[col.field]);
@@ -108,18 +108,18 @@ const AdditionalServiceRequestManagementPage = () => {
   // Function to handle search input change
   const filterData = () => {
     const filtered = data.filter((row) => {
-      const orderAttributesMatch =
-        Object.values(row).some((value) =>
-          value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-        ) ||
-        row.service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) 
+        const orderAttributesMatch =
+            Object.values(row).some((value) =>
+                (value !== null && value.toString().toLowerCase().includes(searchQuery.toLowerCase()))
+            ) ||
+            (row.service && row.service.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (row.user && row.user.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (row.user && row.user.lastName.toLowerCase().includes(searchQuery.toLowerCase()))
 
-      return orderAttributesMatch;
+        return orderAttributesMatch;
     });
     setFilteredData(filtered);
-  };
+};
 
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
