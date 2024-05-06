@@ -127,7 +127,7 @@ const EventRequestManagementPage = () => {
 
   const handleConfirmation = (id) => {
     Modal.confirm({
-      title: "Confirm Delete",
+      title: "Confirm Request",
       content: "Are you sure you want to confirm this request?",
       okText: "Yes",
       cancelText: "No",
@@ -225,7 +225,9 @@ const EventRequestManagementPage = () => {
       headerName: "Booked Date",
       width: 150,
       renderCell: (params) => {
-        return formatDate(params.value);
+        const date = new Date(params.value);
+        const formattedDate = date.toDateString();
+        return formattedDate;
       },
     },
     { field: "noOfGuests", headerName: "No Of Guests", width: 100 },

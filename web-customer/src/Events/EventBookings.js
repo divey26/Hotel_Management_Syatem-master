@@ -21,16 +21,20 @@ const EventBookings = () => {
     },
   };
   const columns = [
-    { field: "eventId", headerName: "Booking ID", width: 200 },
+    { field: "requestId", headerName: "Booking ID", width: 200 },
     {
       field: "bookingDate",
       headerName: "Booking Date",
       width: 250,
       headerClassName: styles.boldHeader,
       renderCell: (params) => {
-        return formatDate(params.value);
+        // Assuming params.value is a valid Date object
+        const date = new Date(params.value);
+        const formattedDate = date.toDateString();
+        return formattedDate;
       },
     },
+
     {
       field: "location",
       headerName: "Location",
@@ -59,15 +63,13 @@ const EventBookings = () => {
           {params.row.status === "Confirmed" && (
             <Button
               type="link"
-              icon={
-                <CloseCircleOutlined
-                  style={{ color: "red", fontSize: "30px" }}
-                />
-              }
               onClick={() => handleCancelConfirmation(params.row)}
-              style={{ padding: "0" }}
+              style={{ padding: "0", color: "red" }} // Added color: "red"
               size="large"
-            />
+            >
+              {" "}
+              Cancel
+            </Button>
           )}
         </strong>
       ),

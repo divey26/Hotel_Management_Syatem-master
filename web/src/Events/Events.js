@@ -357,18 +357,6 @@ const EventManagementPage = () => {
                 Events Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              {/* Export buttons */}
-              <Space>
-                <Button
-                  type="primary"
-                  icon={<FilePdfOutlined />}
-                  onClick={exportToPDF}
-                >
-                  Export to PDF
-                </Button>
-              </Space>
-            </div>
           </Space>
           <br />
           <br />
