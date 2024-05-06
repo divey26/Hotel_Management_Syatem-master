@@ -36,6 +36,9 @@ const BookingsPage = () => {
       headerName: "Customer",
       width: 200,
       renderCell: (params) => {
+        if (!params.value || !params.value.customerId) {
+          return null; // Or handle the case when customerId is not available
+        }
         const ID = params.value.customerId;
         const Name = params.value.firstName + " " + params.value.lastName;
         return (
@@ -45,6 +48,7 @@ const BookingsPage = () => {
           </div>
         );
       },
+      
     },
     {
       field: "room",
