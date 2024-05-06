@@ -55,6 +55,9 @@ const BookingsPage = () => {
       headerName: "Room",
       width: 200,
       renderCell: (params) => {
+        if (!params.value || !params.value.number) {
+          return null; // Or handle the case when params.value or params.value.number is null
+        }
         const roomNumber = params.value.number;
         const roomPrice = params.value.price;
         return (
@@ -66,18 +69,28 @@ const BookingsPage = () => {
           </div>
         );
       },
+      
     },
     {
       field: "checkInDate",
       headerName: "Check-in Date",
       width: 150,
-      renderCell: (params) => formatDate(params.value),
+    
+      renderCell: (params) => {
+        const date = new Date(params.value);
+        const formattedDate = date.toDateString();
+        return formattedDate;
+      },
     },
     {
       field: "checkOutDate",
       headerName: "Check-out Date",
       width: 150,
-      renderCell: (params) => formatDate(params.value),
+      renderCell: (params) => {
+        const date = new Date(params.value);
+        const formattedDate = date.toDateString();
+        return formattedDate;
+      },
     },
     { field: "numberOfGuests", headerName: "Number of Guests", width: 100 },
     {

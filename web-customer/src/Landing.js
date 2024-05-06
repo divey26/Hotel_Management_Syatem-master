@@ -110,6 +110,7 @@ const Landing = () => {
   const [checkOutDate, setCheckOutDate] = useState(null);
   const [capacity, setCapacity] = useState(1);
   const [selectedRoom, setSelectedRoom] = useState(false);
+  const [selectedRoom1, setSelectedRoom1] = useState(false);
   const [openBookingForm, setOpenBooking] = useState(false);
   const [form] = Form.useForm();
   const [feedBackForm] = Form.useForm();
@@ -235,6 +236,7 @@ const Landing = () => {
   const handleBookClick = (room) => {
     if (storedAuthToken && storedCustomerId) {
       setSelectedRoom(room._id);
+      setSelectedRoom1(room);  // Include room data
       setOpenBooking(true);
     } else {
       Swal.fire({
@@ -247,6 +249,7 @@ const Landing = () => {
       });
     }
   };
+  
 
   const handleBookingClose = () => {
     setSelectedRoom(null);
@@ -496,8 +499,9 @@ const Landing = () => {
         </Carousel>
       </div>
       <Modal open={openBookingForm} footer={null} onCancel={handleBookingClose}>
-        <BookingForm onFinish={handleBooking} form={form} />
-      </Modal>
+  <BookingForm onFinish={handleBooking} form={form} selectedRoom={selectedRoom1} /> {/* Pass selected room */}
+</Modal>
+
     </div>
   );
 };

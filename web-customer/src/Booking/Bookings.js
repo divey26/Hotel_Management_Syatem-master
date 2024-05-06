@@ -46,7 +46,9 @@ const Booking = () => {
       width: 250,
       headerClassName: styles.boldHeader,
       renderCell: (params) => {
-        return formatDate(params.value);
+        const date = new Date(params.value);
+        const formattedDate = date.toDateString();
+        return formattedDate;
       },
     },
     {
@@ -55,7 +57,9 @@ const Booking = () => {
       width: 250,
       headerClassName: styles.boldHeader,
       renderCell: (params) => {
-        return formatDate(params.value);
+        const date = new Date(params.value);
+        const formattedDate = date.toDateString();
+        return formattedDate;
       },
     },
     {

@@ -3,7 +3,7 @@ import { Form, Input, DatePicker, Button, Typography, InputNumber } from "antd";
 
 const { Title } = Typography;
 
-const BookingForm = ({ form, onFinish }) => {
+const BookingForm = ({ form, onFinish, selectedRoom }) => {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
@@ -14,7 +14,15 @@ const BookingForm = ({ form, onFinish }) => {
     }
     return Promise.resolve();
   };
-
+  const validateNoOfPersons = (_, value) => {
+    if (!value || value < 1) {
+      return Promise.reject("Number of persons must be at least 1");
+    }
+    if (selectedRoom && value > selectedRoom.capacity) {
+      return Promise.reject(`Number of persons cannot exceed ${selectedRoom.capacity}`);
+    }
+    return Promise.resolve();
+  };
   const validateCheckOutDate = (_, value) => {
     const checkInDate = form.getFieldValue("checkInDate");
     if (value && checkInDate && value.isBefore(checkInDate, "day")) {
@@ -60,10 +68,14 @@ const BookingForm = ({ form, onFinish }) => {
           <DatePicker style={{ width: "100%" }} />
         </Form.Item>
 
+       
         <Form.Item
           label="Number of Guests"
           name="numberOfGuests"
-          rules={[{ required: true, message: "Please input no of guests!" }]}
+          rules={[
+            { required: true, message: "Please input number of guests!" },
+            { validator: validateNoOfPersons },
+          ]}
         >
           <InputNumber min={1} />
         </Form.Item>
