@@ -221,16 +221,31 @@ const FoodOrderingPage = () => {
           )}
         />
 
-        <Form.Item
-          name="phone"
-          label="Phone"
-          rules={[{ required: true, message: "Please input phone!" }]}
-        >
-          <Input
-            value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
-          />
-        </Form.Item>
+<Form.Item
+  name="phone"
+  label="Phone"
+  rules={[
+    { required: true, message: "Please input phone!" },
+    {
+      pattern: /^[0-9]*$/,
+      message: "Please enter only numbers.",
+    },
+    {
+      len: 10,
+      message: "Phone number should be 10 digits long.",
+    },
+  ]}
+>
+  <Input
+    value={customerPhone}
+    onChange={(e) => {
+      const inputValue = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+      setCustomerPhone(inputValue);
+    }}
+    maxLength={10} // Limit input to 10 characters
+  />
+</Form.Item>
+
 
         <Form.Item
           label="Delivery Address"

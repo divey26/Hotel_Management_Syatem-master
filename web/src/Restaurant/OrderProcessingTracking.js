@@ -17,10 +17,7 @@ import axios from "axios";
 import {
   LoadScript,
   GoogleMap,
-  DirectionsService,
   DirectionsRenderer,
-  Marker,
-  InfoWindow,
 } from "@react-google-maps/api";
 const { Title } = Typography;
 const { Search } = Input;
@@ -30,15 +27,9 @@ const OrderProcessingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loggedInUserType, setLoggedInUserType] = useState("");
-  // const [trackModalVisible, setTrackModalVisible] = useState(false);
-  // const [selectedOrder, setSelectedOrder] = useState(null);
-  // const [directions, setDirections] = useState(null);
-  // const [infoWindowOpen, setInfoWindowOpen] = useState(false);
-  // const [directionsFetched, setDirectionsFetched] = useState(false);
+  const [orders, setOrders] = useState([]);
   const libraries = ["places"];
-  // const handleMarkerClick = () => {
-  //   setInfoWindowOpen(!infoWindowOpen);
-  // };
+
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
     if (userType) {
@@ -55,7 +46,7 @@ const OrderProcessingPage = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_BACKEND_BASE_URL}/orders`
       );
-      setFilteredOrders(
+      setOrders(
         response.data.data.filter((order) =>
           [
             "Confirmed",
@@ -74,19 +65,17 @@ const OrderProcessingPage = () => {
 
   useEffect(() => {
     if (searchTerm) {
-      const filteredData = filteredOrders.filter(
+      const filteredData = orders.filter(
         (order) =>
           order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.user.firstName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
+          order.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
           order.status.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredOrders(filteredData);
     } else {
-      fetchOrders();
+      setFilteredOrders(orders);
     }
-  }, [searchTerm]);
+  }, [searchTerm, orders]);
 
   const handleSearch = (value) => {
     setSearchTerm(value);
@@ -149,34 +138,6 @@ const OrderProcessingPage = () => {
     }
   };
 
-  // const trackOrder = (order) => {
-  //   setSelectedOrder(order);
-  //   setTrackModalVisible(true);
-
-  //   if (!directionsFetched) {
-  //     fetchDirections(order);
-  //     setDirectionsFetched(true);
-  //   }
-  // };
-
-  // const fetchDirections = (order) => {
-  //   const directionsService = new window.google.maps.DirectionsService();
-
-  //   directionsService.route(
-  //     {
-  //       origin: "148/10, Station Road, Jaffna",
-  //       destination: order.deliveryAddress,
-  //       travelMode: "DRIVING",
-  //     },
-  //     (result, status) => {
-  //       if (status === "OK") {
-  //         setDirections(result);
-  //       } else {
-  //         console.error("Directions request failed due to " + status);
-  //       }
-  //     }
-  //   );
-  // };
   return (
     <Layout userType={loggedInUserType}>
       <div>
@@ -210,6 +171,7 @@ const OrderProcessingPage = () => {
           placeholder="Search by Order ID or Customer Name"
           allowClear
           onSearch={handleSearch}
+          
           style={{ marginBottom: "16px" }}
           size="large"
         />
@@ -260,71 +222,12 @@ const OrderProcessingPage = () => {
                     >
                       Ready to deliver
                     </Button>
-                    {/* <Button
-                      type="default"
-                      block
-                      style={{ margin: "8px 0" }}
-                      onClick={() => trackOrder(order)}
-                    >
-                      Track Your Order
-                    </Button> */}
                   </>
                 )}
               </Card>
             </Col>
           ))}
         </Row>
-        <br />
-        <br />
-        {/* <Modal
-          visible={trackModalVisible}
-          onCancel={() => setTrackModalVisible(false)}
-          footer={null}
-          title={
-            <div>
-              <p>
-                <span style={{ color: "blue" }}>From:</span> 148/10, Station
-                Road, Jaffna
-              </p>
-              <p>
-                <span style={{ color: "blue" }}>To:</span>{" "}
-                {selectedOrder ? selectedOrder.deliveryAddress : ""}
-              </p>
-              <p>
-                Track Your Order{" "}
-                <span style={{ color: "red" }}>
-                  {selectedOrder ? `- Order ID: ${selectedOrder.orderId}` : ""}
-                </span>{" "}
-                {directions
-                  ? `- Distance: ${directions.routes[0].legs[0].distance.text}, Duration: ${directions.routes[0].legs[0].duration.text}`
-                  : ""}
-              </p>
-            </div>
-          }
-          width={800}
-        >
-          {selectedOrder && (
-            <div style={{ height: "400px" }}>
-              <LoadScript
-                googleMapsApiKey="AIzaSyDaEFbBWJWRyk-cqRBstCPTOKbqerVSTHg"
-                libraries={libraries}
-              >
-                <GoogleMap
-                  mapContainerStyle={{ height: "100%", width: "100%" }}
-                  center={{
-                    lat: 7.8731, // Latitude of Jaffna
-                    lng: 80.7718, // Longitude of Jaffna
-                  }}
-                  zoom={10}
-                >
-                  {directions && (
-                    <DirectionsRenderer directions={directions} />
-                  )}
-                </GoogleMap>
-              </LoadScript>
-            </div>
-          )}
-        </Modal> */}
       </div>
     </Layout>
   );
