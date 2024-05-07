@@ -82,6 +82,18 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!signUpAsAdmin && !employee) {
+      message.error("Please give the employee id!");
+      return
+    }
+    if (!username || !email || !password) {
+      message.error("Please give the details!");
+      return
+    }
+    handleRegister()
+  };
+
+  const handleRegister = async () => {
     try {
       const userType = signUpAsAdmin ? "admin" : "user"; // Determine user type
       const userData = signUpAsAdmin
@@ -101,9 +113,17 @@ export default function Register() {
           timer: 1000,
         }).then(() => {
           const authToken = response.data.token;
-          const loggedInUser = response.data.data;
+          const createdUser = response.data.data.createdUser;
+          console.log(createdUser);
+          const userId = createdUser._id;
+          const empid = createdUser.employee;
+          const data = createdUser;
+          console.log(data);
           localStorage.setItem("authToken", authToken);
-          localStorage.setItem("loggedInUserType", loggedInUser.userType);
+          localStorage.setItem("loggedInUserType", createdUser.userType);
+          localStorage.setItem("userId", userId);
+          localStorage.setItem("data", data);
+          localStorage.setItem("empid", empid);
           navigate("/dashboard");
         });
       }
@@ -122,7 +142,7 @@ export default function Register() {
         message.error(error.response.data.message);
       }
     }
-  };
+  }
 
   return (
     <div style={styles.body}>
@@ -172,6 +192,7 @@ export default function Register() {
               id="email"
               label="Email Address"
               name="email"
+              type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}

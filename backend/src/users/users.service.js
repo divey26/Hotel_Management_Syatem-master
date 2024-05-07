@@ -8,10 +8,15 @@ const generateUniqueId = require("../common/generate-key");
 const register = async (userData) => {
   try {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
+    let createdUser = null
     if(userData.employee){
       const employee = await employeeService.getOneByEmployeeId(
         userData.employee
       );
+
+      if(!employee){
+        throw new Error("Invalid Employee!");
+      }
   
       const user = new User({
         username: userData.username,
@@ -21,8 +26,7 @@ const register = async (userData) => {
         employee: employee._id,
       });
       user.userId = generateUniqueId("USR");
-      await user.save();
-      return user;
+      createdUser = await user.save();
     }else{
       const user = new User({
         username: userData.username,
@@ -31,9 +35,13 @@ const register = async (userData) => {
         userType: userData.userType,
       });
       user.userId = generateUniqueId("USR");
-      await user.save();
-      return user;
+      createdUser = await user.save();
     }
+
+    const token = jwt.sign({ userId: createdUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    return { createdUser, token };
 
   } catch (error) {
     throw error;

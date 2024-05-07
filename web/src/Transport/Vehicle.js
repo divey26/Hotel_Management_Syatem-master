@@ -40,7 +40,7 @@ const VehicleManagementPage = () => {
   const [isAddVehicleModalVisible, setIsAddVehicleModalVisible] =
     useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
-  const [uploadImageRoom, setUploadImageRoom] = useState(null);
+  const [uploadImageVehicle, setUploadImageVehicle] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
@@ -134,9 +134,9 @@ const VehicleManagementPage = () => {
       registrationNumber: vehicle.registrationNumber,
     });
   };
-  const handleOpenImageUpload = (room) => {
+  const handleOpenImageUpload = (Vehicle) => {
     setIsImageModalVisible(true);
-    setUploadImageRoom(room);
+    setUploadImageVehicle(Vehicle);
   };
 
   const handleUpload = ({ fileList }) => {
@@ -147,7 +147,7 @@ const VehicleManagementPage = () => {
   };
   const handleCancelImageUpload = () => {
     setIsImageModalVisible(false);
-    setUploadImageRoom(null);
+    setUploadImageVehicle(null);
   };
   const handleImageUpload = async () => {
     try {
@@ -158,7 +158,7 @@ const VehicleManagementPage = () => {
         selectedImages.map(async (file) => {
           const storageRef = ref(
             storage,
-            `room_images/${uploadImageRoom.id}/${file.name}`
+            `Vehicle_images/${uploadImageVehicle.id}/${file.name}`
           );
           const snapshot = await uploadBytes(storageRef, file);
           const downloadURL = await getDownloadURL(snapshot.ref);
@@ -167,12 +167,12 @@ const VehicleManagementPage = () => {
         })
       );
 
-      let updateRoomObj = { ...uploadImageRoom };
-      updateRoomObj.imageUrls = uploadedImageUrls;
+      let updateVehicleObj = { ...uploadImageVehicle };
+      updateVehicleObj.imageUrls = uploadedImageUrls;
 
       const response = await axios.put(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/vehicles/${uploadImageRoom.id}`,
-        updateRoomObj,
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/vehicles/${uploadImageVehicle.id}`,
+        updateVehicleObj,
         {
           headers: {
             Authorization: token,
@@ -224,7 +224,7 @@ const VehicleManagementPage = () => {
               <img
                 key={index}
                 src={imageUrl}
-                alt={`Room Image ${index}`}
+                alt={`Vehicle Image ${index}`}
                 style={{ width: "30px", height: "30px" }}
                 onClick={() => handlePreview(imageUrl)}
               />
@@ -424,7 +424,7 @@ const VehicleManagementPage = () => {
           </Modal>
           <Modal
             open={isImageModalVisible}
-            title="Upload Room Images"
+            title="Upload Vehicle Images"
             okText="Upload"
             cancelText="Cancel"
             onCancel={handleCancelImageUpload}
