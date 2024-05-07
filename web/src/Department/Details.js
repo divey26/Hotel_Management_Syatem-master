@@ -158,7 +158,7 @@ const filterData = () => {
       width: 150,
       renderCell: (params) => params.value.name,
     },
-    { field: "_id", headerName: "ID", width: 150 },
+    { field: "stockId", headerName: "ID", width: 150 },
     { field: "name", headerName: "Name", width: 100 },
     { field: "description", headerName: "Description", width: 150 },
     { field: "unit", headerName: "Unit", width: 100 },

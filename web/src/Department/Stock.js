@@ -21,6 +21,7 @@ import {
 import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
 import StockForm from "./AddEditStock";
+import Summa from "./summa"
 import axios from "axios";
 import "jspdf-autotable";
 import { exportToPDF } from "../Common/report";
@@ -34,7 +35,9 @@ const StockManagementPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState([]); // State to hold filtered data
   const [isAddStockModalVisible, setIsAddStockModalVisible] = useState(false);
+  const [isQRModalVisible, setIsQRModalVisible] = useState(false);
   const [editingStock, setEditingStock] = useState(null);
+  const [stockIdForQR, setStockIdForQR] = useState(null);
 
   const fetchStocks = async () => {
     try {
@@ -81,6 +84,12 @@ const StockManagementPage = () => {
   const addNewStock = () => {
     setIsAddStockModalVisible(true);
   };
+  const GenQr = (id) => {
+    setStockIdForQR(id); // Set the stockId for QR code
+    setIsQRModalVisible(true); // Open the QR modal
+  };
+  
+
   const generatePDF = () => {
     const columnsToExport = columns.filter(
       (col) => col.field !== "action" && col.field !== "imageUrls"
@@ -111,6 +120,11 @@ const StockManagementPage = () => {
     setIsAddStockModalVisible(false);
     setEditingStock(null);
     form.resetFields();
+  };
+
+  const handleQrCancel = () => {
+    setIsQRModalVisible(false);
+ 
   };
 
   const confirmDelete = (id) => {
@@ -176,8 +190,8 @@ const StockManagementPage = () => {
       width: 150,
       renderCell: (params) => (
         <div>
-                     <Button
-            onClick={() => confirmDelete(params.row.id)}
+          <Button
+            onClick={() => GenQr(params.row.id)}
             icon={<QrcodeOutlined style={{ color: "black" }} />}
           />
           <Button
@@ -337,6 +351,13 @@ const StockManagementPage = () => {
           >
             <StockForm form={form} onFinish={onFinish} />
           </Modal>
+          <Modal
+            open={isQRModalVisible}
+            onCancel={handleQrCancel}
+          >
+            <Summa stockId={stockIdForQR} /> {/* Pass the stockId as a prop */}
+          </Modal>
+
         </Content>
       </Layout>
     </LayoutNew>
