@@ -20,7 +20,7 @@ import {
   StockOutlined,
   SearchOutlined,
   EditOutlined,
-  DeleteOutlined,
+  DeleteOutlined, 
 } from "@ant-design/icons";
 import LayoutNew from "../Layout";
 
@@ -121,16 +121,16 @@ const Scanner = () => {
             />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-  <Webcam
-    audio={false}
-    height={320}
-    ref={webcamRef}
-    screenshotFormat="image/jpeg"
-    width={500}
-    videoConstraints={{
-      facingMode: 'environment',
-    }}
-  />
+      <Webcam
+           audio={false}
+           height={320}
+           ref={webcamRef}
+           screenshotFormat="image/jpeg"
+           width={500}
+           videoConstraints={{
+                facingMode: 'environment',
+           }}
+       />
 
 <div style={{ marginLeft: "540px", marginRight: "auto", marginTop:"20px" }}>
               <Button
