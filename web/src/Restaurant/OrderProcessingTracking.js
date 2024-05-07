@@ -10,14 +10,18 @@ import {
   Tag,
   Input,
   message,
+  Modal,
 } from "antd";
-import {
-  SearchOutlined,
-  CheckCircleOutlined,
-  SolutionOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, SolutionOutlined } from "@ant-design/icons";
 import axios from "axios";
-
+import {
+  LoadScript,
+  GoogleMap,
+  DirectionsService,
+  DirectionsRenderer,
+  Marker,
+  InfoWindow,
+} from "@react-google-maps/api";
 const { Title } = Typography;
 const { Search } = Input;
 
@@ -25,9 +29,16 @@ const OrderProcessingPage = () => {
   const token = localStorage.getItem("authToken");
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredOrders, setFilteredOrders] = useState([]);
-
   const [loggedInUserType, setLoggedInUserType] = useState("");
-
+  // const [trackModalVisible, setTrackModalVisible] = useState(false);
+  // const [selectedOrder, setSelectedOrder] = useState(null);
+  // const [directions, setDirections] = useState(null);
+  // const [infoWindowOpen, setInfoWindowOpen] = useState(false);
+  // const [directionsFetched, setDirectionsFetched] = useState(false);
+  const libraries = ["places"];
+  // const handleMarkerClick = () => {
+  //   setInfoWindowOpen(!infoWindowOpen);
+  // };
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
     if (userType) {
@@ -117,6 +128,7 @@ const OrderProcessingPage = () => {
         startupLocation: "148/10, Station Road, Jaffna",
         endupLocation: order.deliveryAddress,
         order: order._id,
+        user: order.user._id,
         travelStartDateTime: new Date(),
       };
       const response = await axios.post(
@@ -137,6 +149,34 @@ const OrderProcessingPage = () => {
     }
   };
 
+  // const trackOrder = (order) => {
+  //   setSelectedOrder(order);
+  //   setTrackModalVisible(true);
+
+  //   if (!directionsFetched) {
+  //     fetchDirections(order);
+  //     setDirectionsFetched(true);
+  //   }
+  // };
+
+  // const fetchDirections = (order) => {
+  //   const directionsService = new window.google.maps.DirectionsService();
+
+  //   directionsService.route(
+  //     {
+  //       origin: "148/10, Station Road, Jaffna",
+  //       destination: order.deliveryAddress,
+  //       travelMode: "DRIVING",
+  //     },
+  //     (result, status) => {
+  //       if (status === "OK") {
+  //         setDirections(result);
+  //       } else {
+  //         console.error("Directions request failed due to " + status);
+  //       }
+  //     }
+  //   );
+  // };
   return (
     <Layout userType={loggedInUserType}>
       <div>
@@ -178,13 +218,13 @@ const OrderProcessingPage = () => {
         <Row gutter={[16, 16]}>
           {filteredOrders.map((order) => (
             <Col key={order._id} xs={24} sm={12} md={8} lg={6}>
-              <Card title={`Order ID: ${order._id}`} size="small">
+              <Card title={`Order ID: ${order.orderId}`} size="small">
                 <p>
                   <strong>Items:</strong>
                 </p>
                 <ul>
                   {order.items.map((item) => (
-                    <li key={item._id}>
+                    <li key={item.menuId}>
                       {item.name} - Quantity: {item.quantity}
                     </li>
                   ))}
@@ -208,14 +248,24 @@ const OrderProcessingPage = () => {
                   </Button>
                 )}
                 {order.status === "Processing" && (
-                  <Button
-                    type="primary"
-                    block
-                    style={{ margin: "8px 0" }}
-                    onClick={() => readyToDeliver(order)}
-                  >
-                    Ready to deliver
-                  </Button>
+                  <>
+                    <Button
+                      type="primary"
+                      block
+                      style={{ margin: "8px 0" }}
+                      onClick={() => readyToDeliver(order)}
+                    >
+                      Ready to deliver
+                    </Button>
+                    {/* <Button
+                      type="default"
+                      block
+                      style={{ margin: "8px 0" }}
+                      onClick={() => trackOrder(order)}
+                    >
+                      Track Your Order
+                    </Button> */}
+                  </>
                 )}
               </Card>
             </Col>
@@ -223,6 +273,55 @@ const OrderProcessingPage = () => {
         </Row>
         <br />
         <br />
+        {/* <Modal
+          visible={trackModalVisible}
+          onCancel={() => setTrackModalVisible(false)}
+          footer={null}
+          title={
+            <div>
+              <p>
+                <span style={{ color: "blue" }}>From:</span> 148/10, Station
+                Road, Jaffna
+              </p>
+              <p>
+                <span style={{ color: "blue" }}>To:</span>{" "}
+                {selectedOrder ? selectedOrder.deliveryAddress : ""}
+              </p>
+              <p>
+                Track Your Order{" "}
+                <span style={{ color: "red" }}>
+                  {selectedOrder ? `- Order ID: ${selectedOrder.orderId}` : ""}
+                </span>{" "}
+                {directions
+                  ? `- Distance: ${directions.routes[0].legs[0].distance.text}, Duration: ${directions.routes[0].legs[0].duration.text}`
+                  : ""}
+              </p>
+            </div>
+          }
+          width={800}
+        >
+          {selectedOrder && (
+            <div style={{ height: "400px" }}>
+              <LoadScript
+                googleMapsApiKey="AIzaSyDaEFbBWJWRyk-cqRBstCPTOKbqerVSTHg"
+                libraries={libraries}
+              >
+                <GoogleMap
+                  mapContainerStyle={{ height: "100%", width: "100%" }}
+                  center={{
+                    lat: 7.8731, // Latitude of Jaffna
+                    lng: 80.7718, // Longitude of Jaffna
+                  }}
+                  zoom={10}
+                >
+                  {directions && (
+                    <DirectionsRenderer directions={directions} />
+                  )}
+                </GoogleMap>
+              </LoadScript>
+            </div>
+          )}
+        </Modal> */}
       </div>
     </Layout>
   );

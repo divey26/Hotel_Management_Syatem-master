@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const menuItemSchema = new mongoose.Schema({
+  menuId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   type: {
     type: String,
     enum: ["food", "beverage","dessert"],

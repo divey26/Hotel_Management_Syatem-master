@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const stockSchema = new mongoose.Schema({
+  stockId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   department: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Department",

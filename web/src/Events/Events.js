@@ -61,7 +61,7 @@ const EventManagementPage = () => {
     fetchEvents();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
@@ -76,14 +76,21 @@ const EventManagementPage = () => {
     message.success("Exported to PDF successfully");
   };
   const filterData = () => {
-    setFilteredData(data);
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+      return orderAttributesMatch ;
+    });
+    setFilteredData(filtered);
   };
-
-  // Function to handle search input change
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
 
   const addNewEvent = () => {
     setIsAddEventModalVisible(true);
@@ -204,6 +211,7 @@ const EventManagementPage = () => {
   };
 
   const columns = [
+    { field: "eventId", headerName: "Event ID", width: 150 },
     { field: "name", headerName: "Name", width: 250 },
     { field: "description", headerName: "Description", width: 300 },
     {
@@ -318,7 +326,7 @@ const EventManagementPage = () => {
       message.error(error.response.data.message);
     }
   };
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -350,13 +358,16 @@ const EventManagementPage = () => {
               </Title>
             </Space>
             <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewEvent}
-              >
-                Add New Event
-              </Button>
+              {/* Export buttons */}
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={exportToPDF}
+                >
+                  Export to PDF
+                </Button>
+              </Space>
             </div>
           </Space>
           <br />
@@ -378,24 +389,13 @@ const EventManagementPage = () => {
 
             {/* Empty space to push buttons to the right */}
             <div style={{ flex: 1 }}></div>
-
-            {/* Export buttons */}
-            <Space>
-              <Button
-                type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
-              >
-                Export to Excel
-              </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
-              </Button>
-            </Space>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={addNewEvent}
+            >
+              Add New Event
+            </Button>
           </div>
           <DataGrid
             rows={sortedRows}

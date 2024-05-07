@@ -63,29 +63,30 @@ const EventLocationManagementPage = () => {
     fetchEventLocations();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
 
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
-  };
-  // Export to PDF function
-  const exportToPDF = () => {
-    message.success("Exported to PDF successfully");
-  };
   const filterData = () => {
-    setFilteredData(data);
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+      return orderAttributesMatch ;
+    });
+    setFilteredData(filtered);
   };
-
-  // Function to handle search input change
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
+
 
   const addNewEventLocation = () => {
     setIsAddEventLocationModalVisible(true);
@@ -208,6 +209,7 @@ const EventLocationManagementPage = () => {
   };
 
   const columns = [
+    { field: "locationId", headerName: "Location ID", width: 150 },
     { field: "name", headerName: "Name", width: 250 },
     { field: "description", headerName: "Description", width: 300 },
     {
@@ -318,7 +320,7 @@ const EventLocationManagementPage = () => {
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -350,15 +352,6 @@ const EventLocationManagementPage = () => {
                 Event Locations Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewEventLocation}
-              >
-                Add New Event Location
-              </Button>
-            </div>
           </Space>
           <br />
           <br />
@@ -379,24 +372,15 @@ const EventLocationManagementPage = () => {
 
             {/* Empty space to push buttons to the right */}
             <div style={{ flex: 1 }}></div>
-
-            {/* Export buttons */}
-            <Space>
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
               <Button
                 type="primary"
-                icon={<FileExcelOutlined />}
-                onClick={exportToExcel}
+                icon={<PlusOutlined />}
+                onClick={addNewEventLocation}
               >
-                Export to Excel
+                Add New Event Location
               </Button>
-              <Button
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={exportToPDF}
-              >
-                Export to PDF
-              </Button>
-            </Space>
+            </div>
           </div>
           <DataGrid
             rows={sortedRows}

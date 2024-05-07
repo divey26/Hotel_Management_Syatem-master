@@ -1,7 +1,9 @@
 const Attendance = require("./attendance.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createAttendance = async (attendanceData) => {
   try {
+    attendanceData.attendanceId = generateUniqueId("ATT");
     const attendance = new Attendance(attendanceData);
     await attendance.save();
     return attendance;
@@ -29,8 +31,9 @@ const getAttendanceById = async (attendanceId) => {
 };
 const getAttendancesByUserId = async (userId) => {
   try {
-    const attendance = await Attendance.find({ employee: userId })
-      .populate("employee")
+    const attendance = await Attendance.find({ employee: userId }).populate(
+      "employee"
+    );
     return attendance;
   } catch (error) {
     throw error;

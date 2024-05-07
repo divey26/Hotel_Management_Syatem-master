@@ -1,16 +1,16 @@
-const roomService = require('./rooms.service');
+const roomService = require("./rooms.service");
 
 const createRoom = async (req, res) => {
   try {
     const newRoom = await roomService.createRoom(req.body);
     res.status(201).json({
       success: true,
-      data: newRoom
+      data: newRoom,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -20,12 +20,12 @@ const getRooms = async (req, res) => {
     const rooms = await roomService.getRooms();
     res.status(200).json({
       success: true,
-      data: rooms
+      data: rooms,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -36,17 +36,17 @@ const getRoomById = async (req, res) => {
     if (!room) {
       return res.status(404).json({
         success: false,
-        message: 'Room not found'
+        message: "Room not found",
       });
     }
     res.status(200).json({
       success: true,
-      data: room
+      data: room,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -57,17 +57,17 @@ const updateRoom = async (req, res) => {
     if (!updatedRoom) {
       return res.status(404).json({
         success: false,
-        message: 'Room not found'
+        message: "Room not found",
       });
     }
     res.status(200).json({
       success: true,
-      data: updatedRoom
+      data: updatedRoom,
     });
   } catch (error) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -77,12 +77,32 @@ const deleteRoom = async (req, res) => {
     await roomService.deleteRoom(req.params.id);
     res.status(200).json({
       success: true,
-      message: 'Room deleted successfully'
+      message: "Room deleted successfully",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
+    });
+  }
+};
+
+const getAvailableRooms = async (req, res) => {
+  try {
+    const { checkInDate, checkOutDate, noOfPersons } = req.body;
+    const rooms = await roomService.getAvailableRooms(
+      checkInDate,
+      checkOutDate,
+      noOfPersons
+    );
+    res.status(200).json({
+      success: true,
+      data: rooms,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
@@ -92,5 +112,6 @@ module.exports = {
   getRooms,
   getRoomById,
   updateRoom,
-  deleteRoom
+  deleteRoom,
+  getAvailableRooms,
 };

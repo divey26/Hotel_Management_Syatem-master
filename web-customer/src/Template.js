@@ -147,6 +147,7 @@ const Template = ({ children }) => {
             mode="horizontal"
             defaultSelectedKeys={["1"]}
             items={headerItems}
+            style={{fontSize:'13px'}}
           />
         </div>
         <div

@@ -23,7 +23,7 @@ const RoomForm = ({ form, onFinish }) => {
           <Form.Item
             name="location"
             label="Location"
-            rules={[{ required: true, message: "Please input location!" }]}
+            rules={[{ message: "Please input location!" }]}
           >
             <Input />
           </Form.Item>

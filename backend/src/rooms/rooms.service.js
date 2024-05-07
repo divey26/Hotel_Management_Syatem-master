@@ -1,7 +1,10 @@
-const Room = require('./rooms.model');
+const Room = require("./rooms.model");
+const { getBookedRooms } = require("../booking/booking.service");
+const generateUniqueId = require("../common/generate-key");
 
 const createRoom = async (roomData) => {
   try {
+    roomData.roomId = generateUniqueId("ROOM")
     const newRoom = await Room.create(roomData);
     return newRoom;
   } catch (error) {
@@ -31,7 +34,7 @@ const updateRoom = async (roomId, roomData) => {
   try {
     const updatedRoom = await Room.findByIdAndUpdate(roomId, roomData, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
     return updatedRoom;
   } catch (error) {
@@ -47,10 +50,26 @@ const deleteRoom = async (roomId) => {
   }
 };
 
+const getAvailableRooms = async (checkInDate, checkOutDate, noOfPersons) => {
+  try {
+    const bookedRooms = await getBookedRooms(checkInDate, checkOutDate);
+    const availableRooms = await Room.find({
+      _id: { $nin: bookedRooms.map((room) => room._id) },
+    });
+    const filteredRooms = availableRooms.filter(
+      (room) => room.capacity >= noOfPersons
+    );
+    return filteredRooms;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createRoom,
   getRooms,
   getRoomById,
   updateRoom,
-  deleteRoom
+  deleteRoom,
+  getAvailableRooms,
 };

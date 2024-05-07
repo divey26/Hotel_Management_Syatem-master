@@ -49,7 +49,7 @@ const SupplierManagementPage = () => {
     fetchSuppliers();
   }, []);
 
-  const transformedRows = data.map((row, index) => ({
+  const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,
   }));
@@ -57,16 +57,21 @@ const SupplierManagementPage = () => {
   const sortedRows = [...transformedRows].sort((a, b) => a.number - b.number);
 
   const filterData = () => {
-    setFilteredData(data);
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    
+      return orderAttributesMatch ;
+    });
+    setFilteredData(filtered);
   };
-
-
-  
-  // Function to handle search input change
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    filterData();
   };
+  useEffect(() => {
+    filterData();
+  }, [searchQuery, data]);
 
   const addNewSupplier = () => {
     setIsAddSupplierModalVisible(true);
@@ -113,9 +118,8 @@ const SupplierManagementPage = () => {
     });
   };
 
-
-  
   const columns = [
+    { field: "supplierId", headerName: "Supplier ID", width: 150 },
     { field: "name", headerName: "Name", width: 150 },
     { field: "contact", headerName: "Contact", width: 150 },
     { field: "address", headerName: "Address", width: 200 },
@@ -180,7 +184,7 @@ const SupplierManagementPage = () => {
     }
   };
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -212,15 +216,6 @@ const SupplierManagementPage = () => {
                 Supplier Management
               </Title>
             </Space>
-            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={addNewSupplier}
-              >
-                Add New Supplier
-              </Button>
-            </div>
           </Space>
           <br />
           <br />
@@ -238,6 +233,15 @@ const SupplierManagementPage = () => {
               onChange={handleSearchInputChange}
               style={{ marginRight: "8px" }}
             />
+            <div style={{ marginLeft: "auto", marginRight: "20px" }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={addNewSupplier}
+              >
+                Add New Supplier
+              </Button>
+            </div>
           </div>
           <DataGrid
             rows={sortedRows}

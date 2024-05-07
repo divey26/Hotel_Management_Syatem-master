@@ -1,8 +1,10 @@
+const generateUniqueId = require("../common/generate-key");
 const Booking = require("./booking.model");
 
 const createBooking = async (bookingData) => {
   try {
     const booking = new Booking(bookingData);
+    booking.bookingId = generateUniqueId("BOOK");
     await booking.save();
     return booking;
   } catch (error) {
@@ -60,6 +62,26 @@ const deleteBooking = async (bookingId) => {
   }
 };
 
+const getBookedRooms = async (checkInDate, checkOutDate) => {
+  try {
+    const bookedRooms = await Booking.find({
+      $or: [
+        {
+          checkInDate: { $gte: checkInDate, $lt: checkOutDate },
+        },
+        {
+          checkOutDate: { $gt: checkInDate, $lte: checkOutDate },
+        },
+      ],
+      status: { $ne: "Cancelled" },
+    }).populate("room");
+
+    return bookedRooms.map((booking) => booking.room);
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createBooking,
   getBookings,
@@ -67,4 +89,5 @@ module.exports = {
   getBookingById,
   getBookingsByUserId,
   deleteBooking,
+  getBookedRooms,
 };

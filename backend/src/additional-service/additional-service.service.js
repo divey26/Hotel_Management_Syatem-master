@@ -1,9 +1,11 @@
 const AdditionalService = require("./addtional-service.model");
+const generateUniqueId = require("../common/generate-key");
 
-const createAdditionalService = async (AdditionalServiceData) => {
+const createAdditionalService = async (data) => {
   try {
+    data.serviceId = generateUniqueId("ADS");
     const newAdditionalService = await AdditionalService.create(
-      AdditionalServiceData
+      data
     );
     return newAdditionalService;
   } catch (error) {
@@ -20,10 +22,10 @@ const getAdditionalServices = async () => {
   }
 };
 
-const getAdditionalServiceById = async (AdditionalServiceId) => {
+const getAdditionalServiceById = async (serviceId) => {
   try {
     const AdditionalService = await AdditionalService.findById(
-      AdditionalServiceId
+      serviceId
     );
     return AdditionalService;
   } catch (error) {
@@ -32,14 +34,14 @@ const getAdditionalServiceById = async (AdditionalServiceId) => {
 };
 
 const updateAdditionalService = async (
-  AdditionalServiceId,
-  AdditionalServiceData
+  serviceId,
+  data
 ) => {
   try {
     const updatedAdditionalService =
       await AdditionalService.findByIdAndUpdate(
-        AdditionalServiceId,
-        AdditionalServiceData,
+        serviceId,
+        data,
         {
           new: true,
           runValidators: true,
@@ -51,10 +53,10 @@ const updateAdditionalService = async (
   }
 };
 
-const deleteAdditionalService = async (AdditionalServiceId) => {
+const deleteAdditionalService = async (serviceId) => {
   try {
     await AdditionalService.findByIdAndDelete(
-      AdditionalServiceId
+      serviceId
     );
   } catch (error) {
     throw error;

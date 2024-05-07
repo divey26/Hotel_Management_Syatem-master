@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const driverSchema = new mongoose.Schema({
+  driverId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   firstName: {
     type: String,
     required: true,

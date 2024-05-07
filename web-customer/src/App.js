@@ -19,7 +19,9 @@ import Orders from "./Food-order/Orders";
 import EventBookings from "./Events/EventBookings";
 import AdditionalServiceRequests from "./AdditionalService/AdditionalServiceRequests";
 import TravelRequests from "./Travels/TravelRequests";
-import Feedback from "./Feedback/Feedback";
+import Feedback from "./Customer_Affair_User/Customer_Affair";
+import RaiseComplaintPage from "./Customer_Affair_User/Complaint/Complaint"
+import FeedbackForm from "./Customer_Affair_User/Feedback/Feedback"
 
 function App() {
   const storedCustomerId = localStorage.getItem("customerId");
@@ -123,6 +125,28 @@ function App() {
             )
           }
         />
+
+      <Route
+          path="/give-feedback"
+          element={
+            isAuthenticated() ? (
+              <Template children={< FeedbackForm/>} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+       <Route
+          path="/raise-complaint"
+          element={
+            isAuthenticated() ? (
+              <Template children={< RaiseComplaintPage/>} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        
       </Routes>
     </Router>
   );

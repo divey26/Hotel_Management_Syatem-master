@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const generateUniqueId = require("../common/generate-key");
 const Customer = require("./customer.model");
 
 const register = async (customerData) => {
@@ -18,6 +18,7 @@ const register = async (customerData) => {
       country: customerData.country,
       zipCode: customerData.zipCode,
     });
+    customer.customerId = generateUniqueId("CUS");
     await customer.save();
     return customer;
   } catch (error) {

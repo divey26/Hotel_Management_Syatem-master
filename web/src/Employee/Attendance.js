@@ -8,32 +8,29 @@ import {
   DatePicker,
   Input,
 } from "antd";
-
 import {
   SearchOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
-
 import moment from "moment";
 import { DataGrid } from "@mui/x-data-grid";
 import LayoutNew from "../Layout";
 import axios from "axios";
-
-
+import { formatDate, formatDateOnly } from "../Common/date";
 
 const Attendance = () => {
   const token = localStorage.getItem("userId");
+  const empid = localStorage.getItem("empid");
   const userType = localStorage.getItem("loggedInUserType");
   const [attendance, setAttendance] = useState({
-    employee: token,
+    employee: empid,
     date: moment().format("YYYY-MM-DD"),
     startTime: null,
     endTime: null,
     status: "",
     remarks: "",
   });
-  
   const [records, setRecords] = useState([]);
   const [selectedRowId, setSelectedRowId] = useState(null);
   const [todayRecord, setTodayRecord] = useState(null);
@@ -46,12 +43,33 @@ const Attendance = () => {
       let apiUrl;
       if (userType === "admin") {
         apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/`;
+        const response = await axios.get(apiUrl);
+        const modifiedData = await Promise.all(
+          response.data.data.map(async (item, index) => {
+            let employeeName = ""; // Initialize employee name to an empty string
+            if (item.employee) { // Check if employeeId exists
+              const employeeResponse = await axios.get(
+                `${process.env.REACT_APP_BACKEND_BASE_URL}/employees/${item.employee}`
+              );
+              const employee = employeeResponse.data.data;
+              employeeName = `${employee.firstName} ${employee.lastName}`;
+            }
+            return {
+              ...item,
+              key: index.toString(),
+              employeeName: employeeName,
+              
+            };
+          })
+        );
+        setRecords(modifiedData);
       } else {
-        apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/user/${token}`;
+        apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/user/${empid}`;
+        const response = await axios.get(apiUrl);
+        setRecords(response.data.data);
+        foundRecordForToday(response.data.data);
       }
-      const response = await axios.get(apiUrl);
-      setRecords(response.data.data);
-      foundRecordForToday(response.data.data);
+     
     } catch (error) {
       message.error("Failed to fetch records: " + error.message);
     }
@@ -92,18 +110,24 @@ const Attendance = () => {
   }, [searchKeyword]);
 
   const foundRecordForToday = (records) => {
-    const today = moment().format("YYYY-MM-DD");
+    const today = new Date();
+    const todayDate = formatDateOnly(today);
 
-    console.log(today);
-    const foundTodayRecord = records.find((record) =>
-      moment(record.date).isSame(today, "day")
-    );
+    console.log(todayDate);
+
+    const foundTodayRecord = records.find((record) => {
+      const recordDate = formatDateOnly(record.date);
+      return recordDate === todayDate;
+    });
+
+    console.log(foundTodayRecord);
 
     if (foundTodayRecord) {
-      console.log(foundTodayRecord);
       setTodayRecord(foundTodayRecord);
+      return foundTodayRecord
     } else {
       console.log("No record found for today.");
+      return null
     }
   };
 
@@ -156,11 +180,10 @@ const Attendance = () => {
   };
 
   const handleCheckOut = async () => {
-    // Format today's date as used in your records
-    const foundTodayRecord = records.find((record) => record._id);
+    const foundTodayRecord = foundRecordForToday(records);
 
     try {
-      const apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/${foundTodayRecord._id}`;
+      const apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/${foundTodayRecord?._id}`;
 
       const fullEndTime = moment().toISOString(); // Get current date and time in ISO format
       const response = await axios.put(apiUrl, {
@@ -184,20 +207,34 @@ const Attendance = () => {
   const handleFormChange = (changedValues, allValues) => {
     setAttendance({ ...attendance, ...changedValues });
   };
-
   const columns = [
     ...(userType === "admin"
       ? [
           {
-            field: "employee",
-            headerName: "Employee",
+            field: "employeeName",
+            headerName: "Employee Name",
             width: 150,
           },
         ]
       : []),
-    { field: "date", headerName: "Date", width: 150 },
-    { field: "startTime", headerName: "Start Time", width: 130 },
-    { field: "endTime", headerName: "End Time", width: 130 },
+    {
+      field: "date",
+      headerName: "Date",
+      width: 150,
+      renderCell: (params) => formatDateOnly(params.value),
+    },
+    {
+      field: "startTime",
+      headerName: "Start Time",
+      width: 130,
+      renderCell: (params) => formatDate(params.value),
+    },
+    {
+      field: "endTime",
+      headerName: "End Time",
+      width: 130,
+      renderCell: (params) => (params.value ? formatDate(params.value) : ""),
+    },
     { field: "status", headerName: "Status", width: 120 },
     { field: "remarks", headerName: "Remarks", width: 200 },
     {

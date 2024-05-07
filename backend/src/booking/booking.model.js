@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema({
+  bookingId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
@@ -24,6 +29,9 @@ const bookingSchema = new mongoose.Schema({
     required: false,
   },
   requests: {
+    type: String,
+  },
+  cancelReason: {
     type: String,
   },
   status: {

@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const additionalServiceRequestSchema = new mongoose.Schema({
+  requestId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
@@ -20,6 +25,9 @@ const additionalServiceRequestSchema = new mongoose.Schema({
     required: true,
   },
   requests: {
+    type: String,
+  },
+  cancelReason: {
     type: String,
   },
   status: {

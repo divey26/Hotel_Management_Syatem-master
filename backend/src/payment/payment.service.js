@@ -1,7 +1,9 @@
 const Payment = require("./payment.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createPayment = async (paymentData) => {
   try {
+    paymentData.paymentId = generateUniqueId("PAY");
     const payment = new Payment(paymentData);
     await payment.save();
     return payment;
@@ -12,7 +14,23 @@ const createPayment = async (paymentData) => {
 
 const getPayments = async () => {
   try {
-    const payments = await Payment.find().populate("user").populate("booking").populate("order");
+    const payments = await Payment.find()
+      .populate("user")
+      .populate("booking")
+      .populate("order");
+    return payments;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getPaymentsForBookings = async () => {
+  try {
+    const payments = await Payment.find({
+      booking: { $exists: true, $ne: null },
+    })
+      .populate("user")
+      .populate("booking");
     return payments;
   } catch (error) {
     throw error;
@@ -54,5 +72,6 @@ module.exports = {
   getPayments,
   updatePayment,
   getPaymentById,
+  getPaymentsForBookings,
   deletePayment,
 };

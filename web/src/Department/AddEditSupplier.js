@@ -25,8 +25,8 @@ const SupplierForm = ({ form, onFinish }) => {
                 message: "Please enter a valid 10-digit phone number starting with 0!",
               },
           
-            ]}
-          >
+            ]}         
+            >
             <Input.TextArea />
           </Form.Item>
         </Col>
@@ -36,11 +36,6 @@ const SupplierForm = ({ form, onFinish }) => {
           </Form.Item>
         </Col>
       </Row>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form.Item>
     </Form>
   );
 };

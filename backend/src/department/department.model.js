@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const departmentSchema = new mongoose.Schema({
+  departmentId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -8,7 +13,6 @@ const departmentSchema = new mongoose.Schema({
   description: {
     type: String,
   },
- 
 });
 
 const Department = mongoose.model("Department", departmentSchema);

@@ -274,7 +274,7 @@ const EditCustomer = () => {
               name="creditLimit"
               rules={[{ type: "number", min: 0 }]}
             >
-              <InputNumber />
+              <InputNumber min={1}/>
             </Form.Item>
           </Col>
           <Col span={8}>

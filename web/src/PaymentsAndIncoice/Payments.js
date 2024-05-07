@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Layout, Typography, Button, Modal, message, Space, Input } from "antd";
 import {
   CheckCircleOutlined,
-  DeleteOutlined,
   SearchOutlined,
   FileExcelOutlined,
   FilePdfOutlined,
@@ -61,12 +60,13 @@ const PaymentsPage = () => {
     backgroundColor: "#001529", // Change this to your desired color
   };
   const columns = [
+    { field: "paymentId", headerName: "Payment ID", width: 150 },
     {
       field: "user",
       headerName: "Customer",
       width: 200,
       renderCell: (params) => {
-        const ID = params.value._id;
+        const ID = params.value.customerId;
         const Name = params.value.firstName + " " + params.value.lastName;
         return (
           <div style={{ height: "100%", lineHeight: "normal" }}>
@@ -81,7 +81,7 @@ const PaymentsPage = () => {
       headerName: "Order ID",
       width: 200,
       renderCell: (params) => {
-        return params.value?._id;
+        return params.value?.orderId;
       },
     },
     {
@@ -89,7 +89,7 @@ const PaymentsPage = () => {
       headerName: "Booking ID",
       width: 200,
       renderCell: (params) => {
-        return params.value?._id;
+        return params.value?.bookingId;
       },
     },
     {
@@ -123,7 +123,7 @@ const PaymentsPage = () => {
     },
   ];
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -158,6 +158,16 @@ const PaymentsPage = () => {
                   Payments
                 </Title>
               </Space>
+              {/* Export buttons */}
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={exportToPDF}
+                >
+                  Export to PDF
+                </Button>
+              </Space>
             </Space>
             <br />
 
@@ -179,24 +189,6 @@ const PaymentsPage = () => {
 
               {/* Empty space to push buttons to the right */}
               <div style={{ flex: 1 }}></div>
-
-              {/* Export buttons */}
-              <Space>
-                <Button
-                  type="primary"
-                  icon={<FileExcelOutlined />}
-                  onClick={exportToExcel}
-                >
-                  Export to Excel
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<FilePdfOutlined />}
-                  onClick={exportToPDF}
-                >
-                  Export to PDF
-                </Button>
-              </Space>
             </div>
 
             <div style={{ overflowX: "auto", width: "100%" }}>

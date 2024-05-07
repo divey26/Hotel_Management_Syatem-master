@@ -1,13 +1,26 @@
 const mongoose = require("mongoose");
 
 const travelRequestSchema = new mongoose.Schema({
+  requestId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
   order: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Order",
+    ref: "FoodOrder",
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Customer",
+  },
+  driver: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Driver",
+  },
+  vehicle: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Vehicle",
   },
   passengers: {
     type: Number,
@@ -35,6 +48,12 @@ const travelRequestSchema = new mongoose.Schema({
     type: String,
     enum: ["Pending", "Confirmed", "Cancelled", "Completed"],
     default: "Pending",
+  },
+  requests: {
+    type: String,
+  },
+  cancelReason: {
+    type: String,
   },
 });
 

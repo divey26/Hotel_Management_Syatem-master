@@ -8,6 +8,8 @@ import {
   Button,
   Grid,
   Link,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { Link as RouterLink } from "react-router-dom";
@@ -15,6 +17,7 @@ import backgroundImage from "./logo.png";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { message } from "antd";
 
 export default function Register() {
   const styles = {
@@ -71,7 +74,7 @@ export default function Register() {
   };
 
   const navigate = useNavigate();
-  const userType = "user";
+  const [signUpAsAdmin, setSignUpAsAdmin] = useState(false); // State variable for admin signup
   const [employee, setEmployee] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -80,10 +83,16 @@ export default function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+      const userType = signUpAsAdmin ? "admin" : "user"; // Determine user type
+      const userData = signUpAsAdmin
+        ? { username, email, password, userType }
+        : { employee, username, email, password, userType };
+
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_BASE_URL}/users/register`,
-        { employee, username, email, password, userType }
+        userData
       );
+
       if (response.data.success) {
         Swal.fire({
           icon: "success",
@@ -100,6 +109,18 @@ export default function Register() {
       }
     } catch (error) {
       console.error("Registration failed:", error);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message &&
+        error.response.data.message.includes("E11000 duplicate key error")
+      ) {
+        // Duplicate key error
+        message.error("User already exists");
+      } else {
+        // Other errors
+        message.error(error.response.data.message);
+      }
     }
   };
 
@@ -115,19 +136,21 @@ export default function Register() {
             Register
           </Typography>
           <form style={styles.form} noValidate onSubmit={handleSubmit}>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="employee"
-              label="Employee ID"
-              name="employee"
-              autoComplete="employee"
-              autoFocus
-              value={employee}
-              onChange={(e) => setEmployee(e.target.value)}
-            />
+            {!signUpAsAdmin && ( // Conditionally render employee ID field
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                id="employee"
+                label="Employee ID"
+                name="employee"
+                autoComplete="employee"
+                autoFocus
+                value={employee}
+                onChange={(e) => setEmployee(e.target.value)}
+              />
+            )}
             <TextField
               variant="outlined"
               margin="normal"
@@ -165,6 +188,16 @@ export default function Register() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={signUpAsAdmin}
+                  onChange={(e) => setSignUpAsAdmin(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Sign up as admin"
             />
             <Button
               type="submit"

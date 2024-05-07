@@ -1,7 +1,9 @@
 const Employee = require('./employee.model');
+const generateUniqueId = require("../common/generate-key");
 
 const createEmployee = async (employeeData) => {
   try {
+    employeeData.employeeId = generateUniqueId("EMP")
     const employee = new Employee(employeeData);
     await employee.save();
     return employee;
@@ -22,6 +24,15 @@ const getEmployees = async () => {
 const getEmployeeById = async (employeeId) => {
   try {
     const employee = await Employee.findById(employeeId);
+    return employee;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getOneByEmployeeId = async (employeeId) => {
+  try {
+    const employee = await Employee.findOne({ employeeId: employeeId });
     return employee;
   } catch (error) {
     throw error;
@@ -49,6 +60,7 @@ module.exports = {
   createEmployee,
   getEmployees,
   getEmployeeById,
+  getOneByEmployeeId,
   updateEmployee,
   deleteEmployee
 };

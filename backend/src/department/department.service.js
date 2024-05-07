@@ -1,14 +1,15 @@
 const department = require("./department.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createDepartment = async (departmentData) => {
   try {
+    departmentData.departmentId = generateUniqueId("DEP")
     const newDepartment = await department.create(departmentData);
     return newDepartment;
   } catch (error) {
     throw error;
   }
 };
-
 
 const getDepartments = async () => {
   try {

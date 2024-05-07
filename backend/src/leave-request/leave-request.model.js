@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const leaveRequestSchema = new mongoose.Schema(
   {
+    requestId: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     employee: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",

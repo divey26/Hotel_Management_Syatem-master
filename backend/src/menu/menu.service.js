@@ -1,7 +1,9 @@
 const MenuItem = require("./menu.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createMenuItem = async (menuItemData) => {
   try {
+    menuItemData.menuId = generateUniqueId("ME");
     const menuItem = new MenuItem(menuItemData);
     await menuItem.save();
     return menuItem;

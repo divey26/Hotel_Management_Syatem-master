@@ -1,20 +1,15 @@
 import React, { useEffect, useState } from "react";
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 import {
   Layout,
   Typography,
   Button,
   Modal,
-  message,
   Space,
   Input,
   notification,
 } from "antd";
 import {
   SearchOutlined,
-  FileExcelOutlined,
   FilePdfOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
@@ -24,180 +19,24 @@ import LayoutNew from "../Layout";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { formatDate } from "../Common/date";
+import { exportToPDF } from "../Common/report";
 
 const { Title } = Typography;
 const { Content } = Layout;
 
 const BookingsPage = () => {
-  const styles = {
-    boldHeader: {
-      fontWeight: "bold",
-    },
-  };
-  const customHeaderStyle = {
-    backgroundColor: "#001529",
-  };
   const [data, setData] = useState([]);
-  const fetchBookings = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/bookings`
-      );
-      setData(response.data.data);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const exportToExcel = () => {
-    message.success("Exported to Excel successfully");
-  };
-  // Export to PDF function
-  const exportToPDF = () => {
-    const unit = "pt";
-    const size = "A4";
-    const orientation = "portrait";
-
-    const marginLeft = 40;
-    const doc = new jsPDF(orientation, unit, size);
-
-    const title = "Bookings";
-    const headers = [
-      ["Booking ID", "Customer", "Room", "Check-in Date", "Check-out Date", "Number of Guests", "Payment Status", "Booking Status"]
-    ];
-
-    const data = transformedRows.map(row => [
-      row._id,
-      `${row.user.firstName} ${row.user.lastName}`,
-      row.room.number,
-      formatDate(row.checkInDate),
-      formatDate(row.checkOutDate),
-      row.numberOfGuests,
-      row.paymentStatus,
-      row.status
-    ]);
-
-    doc.setFontSize(15);
-    doc.text(title, marginLeft, 40);
-    doc.autoTable({
-      startY: 50,
-      head: headers,
-      body: data
-    });
-
-    doc.save("Bookings.pdf");
-
-    message.success("Exported to PDF successfully");
-  };
-
+  const [filteredData, setFilteredData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const transformedRows = data.map((row, index) => ({
-    id: row._id, // or any other property that can uniquely identify the row
-    ...row,
-  }));
-
-  const filteredData = transformedRows.filter((item) =>
-    Object.values(item).some((value) =>
-      String(value).toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
-
-  const handleSearchInputChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleCancel = async (id) => {
-    try {
-      const bookdata = {
-        status: "Cancelled",
-      };
-
-      const bookingUpdateResponse = await axios.put(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/bookings/${id}`,
-        bookdata
-      );
-
-      if (bookingUpdateResponse.data.success) {
-        notification.success({
-          message: "Booking Cancelled",
-          description: "The booking has been successfully cancelled.",
-        });
-      } else {
-        throw new Error("Failed to cancel booking");
-      }
-      fetchBookings();
-    } catch (error) {
-      notification.error({
-        message: "Cancellation Error",
-        description:
-          error.message ||
-          "Failed to cancel the booking due to an unexpected error.",
-      });
-    }
-  };
-
-  const handleCancelConfirmation = (id) => {
-    Modal.confirm({
-      title: "Confirm",
-      icon: <ExclamationCircleOutlined />,
-      content: "Are you sure you want to cancel this booking?",
-      onOk: () => handleCancel(id._id),
-    });
-  };
-
-  const handleConfirm = async (id) => {
-    try {
-      const bookdata = {
-        status: "Confirmed",
-      };
-
-      const bookingUpdateResponse = await axios.put(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/bookings/${id}`,
-        bookdata
-      );
-
-      if (bookingUpdateResponse.data.success) {
-        notification.success({
-          message: "Booking Confirmed",
-          description: "The booking has been confirmed successfully.",
-        });
-      } else {
-        throw new Error("Failed to confirm booking");
-      }
-      fetchBookings();
-    } catch (error) {
-      notification.error({
-        message: "Error",
-        description:
-          error.message ||
-          "Failed to confirm the booking due to an unexpected error.",
-      });
-    }
-  };
-
-  const handleBookingConfirmation = (id) => {
-    Modal.confirm({
-      title: "Confirm",
-      icon: <ExclamationCircleOutlined />,
-      content: "Do you want to confirm this booking?",
-      onOk: () => handleConfirm(id._id),
-    });
-  };
-
   const columns = [
-    { field: "_id", headerName: "Booking ID", width: 150 },
+    { field: "bookingId", headerName: "Booking ID", width: 150 },
     {
       field: "user",
       headerName: "Customer",
       width: 200,
-      headerClassName: styles.boldHeader,
       renderCell: (params) => {
-        const ID = params.value._id;
+        const ID = params.value.customerId;
         const Name = params.value.firstName + " " + params.value.lastName;
         return (
           <div style={{ height: "100%", lineHeight: "normal" }}>
@@ -211,14 +50,9 @@ const BookingsPage = () => {
       field: "room",
       headerName: "Room",
       width: 200,
-      headerClassName: styles.boldHeader,
       renderCell: (params) => {
-        if (!params.value) {
-          return 'N/A';
-        }
-    
-        const roomNumber = params.value.number || 'N/A';
-        const roomPrice = params.value.price || 'N/A';
+        const roomNumber = params.value.number;
+        const roomPrice = params.value.price;
         return (
           <div style={{ height: "100%", lineHeight: "normal" }}>
             <p style={{ margin: 0, lineHeight: "1.5" }}>No: {roomNumber}</p>
@@ -229,24 +63,17 @@ const BookingsPage = () => {
         );
       },
     },
-    
-{
+    {
       field: "checkInDate",
       headerName: "Check-in Date",
       width: 150,
-      headerClassName: styles.boldHeader,
-      renderCell: (params) => {
-        return formatDate(params.value);
-      },
+      renderCell: (params) => formatDate(params.value),
     },
     {
       field: "checkOutDate",
       headerName: "Check-out Date",
       width: 150,
-      headerClassName: styles.boldHeader,
-      renderCell: (params) => {
-        return formatDate(params.value);
-      },
+      renderCell: (params) => formatDate(params.value),
     },
     { field: "numberOfGuests", headerName: "Number of Guests", width: 100 },
     {
@@ -259,20 +86,17 @@ const BookingsPage = () => {
         let statusColor = "";
         switch (bookingStatus) {
           case "Pending":
-            paymentStatus = "unpaid";
+            paymentStatus = "Unpaid";
             statusColor = "orange";
             break;
           case "Confirmed":
-            paymentStatus = "paid";
+            paymentStatus = "Paid";
             statusColor = "green";
             break;
           case "Cancelled":
-            paymentStatus = "refund";
+            paymentStatus = "Need a refund";
             statusColor = "red";
             break;
-          default:
-            paymentStatus = "Unknown";
-            statusColor = "black";
         }
         return <span style={{ color: statusColor }}>{paymentStatus}</span>;
       },
@@ -281,7 +105,6 @@ const BookingsPage = () => {
       field: "status",
       headerName: "Booking Status",
       width: 200,
-      headerClassName: styles.boldHeader,
       renderCell: (params) => {
         let statusColor = "";
         switch (params.value) {
@@ -304,7 +127,6 @@ const BookingsPage = () => {
       field: "action",
       headerName: "Action",
       width: 200,
-      headerClassName: styles.boldHeader,
       renderCell: (params) => (
         <strong>
           {params.row.status === "Pending" && (
@@ -338,7 +160,154 @@ const BookingsPage = () => {
     },
   ];
 
-  const [loggedInUserType, setLoggedInUserType] = useState('');
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  useEffect(() => {
+    const filtered = data
+      .map((row) => ({ id: row._id, ...row }))
+      .filter((row) => {
+        const searchTerms = [
+          row._id,
+          `${row.user?.firstName} ${row.user?.lastName}`,
+          row.room?.number?.toString(),
+          row.paymentStatus,
+          row.status,
+        ];
+        return searchTerms.some(
+          (term) =>
+            term && term.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
+    setFilteredData(filtered);
+  }, [searchQuery, data]);
+
+  const fetchBookings = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/bookings`
+      );
+      setData(response.data.data);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    }
+  };
+
+  const generatePDF = () => {
+    const columnsToExport = columns.filter((col) => col.field !== "action");
+
+    const prepareDataForReport = (data) => {
+      return data.map((booking) => {
+        const customerName = `${booking.user.firstName} ${booking.user.lastName}`;
+        const roomNumber = booking.room.number;
+        const bookingStatus = booking.status;
+
+        const rowData = {};
+        columnsToExport.forEach((col) => {
+          if (col.field === "user") {
+            rowData[col.field] = customerName;
+          } else if (col.field === "room") {
+            rowData[col.field] = roomNumber;
+          } else if (col.field === "checkInDate") {
+            rowData[col.field] = formatDate(booking.checkInDate);
+          } else if (col.field === "checkOutDate") {
+            rowData[col.field] = formatDate(booking.checkOutDate);
+          } else if (col.field === "paymentStatus") {
+            switch (bookingStatus) {
+              case "Pending":
+                rowData[col.field] = "Unpaid";
+                break;
+              case "Confirmed":
+                rowData[col.field] = "Paid";
+                break;
+              case "Cancelled":
+                rowData[col.field] = "Need a refund";
+                break;
+            }
+          } else {
+            rowData[col.field] = booking[col.field];
+          }
+        });
+        return rowData;
+      });
+    };
+
+    const reportData = prepareDataForReport(filteredData);
+    exportToPDF(columnsToExport, reportData, {
+      title: "Room Reservations Report",
+    });
+  };
+
+  const handleSearchInputChange = (e) => setSearchQuery(e.target.value);
+
+  const handleCancel = async (id) => {
+    try {
+      const bookdata = { status: "Cancelled" };
+      const bookingUpdateResponse = await axios.put(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/bookings/${id}`,
+        bookdata
+      );
+      if (bookingUpdateResponse.data.success)
+        notification.success({
+          message: "Booking Cancelled",
+          description: "The booking has been successfully cancelled.",
+        });
+      else throw new Error("Failed to cancel booking");
+      fetchBookings();
+    } catch (error) {
+      notification.error({
+        message: "Cancellation Error",
+        description:
+          error.message ||
+          "Failed to cancel the booking due to an unexpected error.",
+      });
+    }
+  };
+
+  const handleCancelConfirmation = (id) => {
+    Modal.confirm({
+      title: "Confirm",
+      icon: <ExclamationCircleOutlined />,
+      content: "Are you sure you want to cancel this booking?",
+      onOk: () => handleCancel(id._id),
+    });
+  };
+
+  const handleConfirm = async (id) => {
+    try {
+      const bookdata = { status: "Confirmed" };
+      const bookingUpdateResponse = await axios.put(
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/bookings/${id}`,
+        bookdata
+      );
+      if (bookingUpdateResponse.data.success)
+        notification.success({
+          message: "Booking Confirmed",
+          description: "The booking has been confirmed successfully.",
+        });
+      else throw new Error("Failed to confirm booking");
+      fetchBookings();
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description:
+          error.message ||
+          "Failed to confirm the booking due to an unexpected error.",
+      });
+    }
+  };
+
+  const handleBookingConfirmation = (id) => {
+    Modal.confirm({
+      title: "Confirm",
+      icon: <ExclamationCircleOutlined />,
+      content: "Do you want to confirm this booking?",
+      onOk: () => handleConfirm(id._id),
+    });
+  };
+
+  const [loggedInUserType, setLoggedInUserType] = useState("");
 
   useEffect(() => {
     const userType = localStorage.getItem("loggedInUserType");
@@ -373,9 +342,17 @@ const BookingsPage = () => {
                   Room Reservations
                 </Title>
               </Space>
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<FilePdfOutlined />}
+                  onClick={generatePDF}
+                >
+                  Export to PDF
+                </Button>
+              </Space>
             </Space>
             <br />
-
             <br />
             <div
               style={{
@@ -384,36 +361,14 @@ const BookingsPage = () => {
                 alignItems: "center",
               }}
             >
-              {/* Search input */}
               <Input
                 placeholder="Search..."
                 prefix={<SearchOutlined />}
                 onChange={handleSearchInputChange}
                 style={{ marginRight: "8px" }}
               />
-
-              {/* Empty space to push buttons to the right */}
               <div style={{ flex: 1 }}></div>
-
-              {/* Export buttons */}
-              <Space>
-                <Button
-                  type="primary"
-                  icon={<FileExcelOutlined />}
-                  onClick={exportToExcel}
-                >
-                  Export to Excel
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<FilePdfOutlined />}
-                  onClick={exportToPDF}
-                >
-                  Export to PDF
-                </Button>
-              </Space>
             </div>
-
             <div style={{ overflowX: "auto", width: "100%" }}>
               <DataGrid
                 rows={filteredData}
@@ -422,12 +377,9 @@ const BookingsPage = () => {
                 rowsPerPageOptions={[5]}
                 disableSelectionOnClick
                 getRowClassName={(params) => {
-                  if (params.row.status === "Cancelled") {
-                    return "cancelled-row";
-                  }
+                  if (params.row.status === "Cancelled") return "cancelled-row";
                   return "";
                 }}
-                headerClassName={customHeaderStyle}
               />
             </div>
           </div>

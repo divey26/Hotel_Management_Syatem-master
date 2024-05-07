@@ -1,8 +1,10 @@
 const LeaveRequest = require("./leave-request.model");
+const generateUniqueId = require("../common/generate-key");
 
-const createLeaveRequest = async (LeaveRequestData) => {
+const createLeaveRequest = async (leaveRequestData) => {
   try {
-    const leaveRequest = new LeaveRequest(LeaveRequestData);
+    leaveRequestData.requestId = generateUniqueId("LR");
+    const leaveRequest = new LeaveRequest(leaveRequestData);
     await leaveRequest.save();
     return leaveRequest;
   } catch (error) {
@@ -29,8 +31,9 @@ const getLeaveRequestById = async (LeaveRequestId) => {
 };
 const getLeaveByUserId = async (userId) => {
   try {
-    const leave = await LeaveRequest.find({ employee: userId })
-      .populate("employee")
+    const leave = await LeaveRequest.find({ employee: userId }).populate(
+      "employee"
+    );
     return leave;
   } catch (error) {
     throw error;

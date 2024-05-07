@@ -1,7 +1,9 @@
 const stock = require("./stock.model");
+const generateUniqueId = require("../common/generate-key");
 
 const createStock = async (stockData) => {
   try {
+    stockData.stockId = generateUniqueId("ST");
     const newStock = await stock.create(stockData);
     return newStock;
   } catch (error) {
