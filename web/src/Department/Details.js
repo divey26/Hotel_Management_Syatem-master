@@ -64,23 +64,19 @@ const DetailsPage = () => {
   }));
 
   const sortedData = [...data].sort((a, b) => a.number - b.number);
+  const filterData = () => {
+    const filtered = data.filter((row) => {
+      const orderAttributesMatch = Object.values(row).some((value) =>
+        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      const idMatch = row._id.toLowerCase().includes(searchQuery.toLowerCase()); // Include searching by _id
+
+      const depMatch = row.department.name.toLowerCase().includes(searchQuery.toLowerCase());
   
-const filterData = () => {
-  if (!searchQuery.trim()) {
-    setFilteredData(sortedData);
-  } else {
-    const filtered = sortedData.filter((item) => {
-      // Filter data based on searchQuery
-      return Object.values(item).some((value) => {
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(searchQuery.toLowerCase());
-        }
-        return false;
-      });
+      return orderAttributesMatch || depMatch || idMatch;
     });
     setFilteredData(filtered);
-  }
-};
+  };
 
   useEffect(() => {
     filterData();

@@ -36,7 +36,6 @@ const Summa = ({stockId}) => {
   }, [stockId]);
   
 
-
   return (
     <Content style={{ padding: "24px" }}>
     <div style={{ textAlign: "center" }}>
