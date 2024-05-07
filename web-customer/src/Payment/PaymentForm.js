@@ -6,6 +6,7 @@ import { GrSecure } from "react-icons/gr";
 import { usePaymentInputs } from "react-payment-inputs";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import {message} from "antd"
 
 export default function PaymentForm() {
   const navigate = useNavigate();
@@ -57,6 +58,11 @@ export default function PaymentForm() {
   };
 
   const handleSubmit = async (e) => {
+    console.log('dfsnvghvgvbkv')
+    console.log(cardNumber)
+    if(!cardNumber){
+      message.error("Card number not given!")
+    }
     e.preventDefault();
     if (meta.isTouched && meta.error) {
       console.error("Form errors must be resolved before submitting!");
@@ -126,7 +132,7 @@ export default function PaymentForm() {
         </div>
       </header>
       <main>
-        {meta.isTouched && meta.error ? (
+        {meta.onSubmit && meta.error ? (
           <span className="span">Error: {meta.error}</span>
         ) : (
           <span className="span"></span>
