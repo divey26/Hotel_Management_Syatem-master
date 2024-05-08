@@ -24,6 +24,17 @@ const StockForm = ({ form, onFinish }) => {
 
   console.log(departments);
 
+  const handlePriceChange = (value) => {
+    const quantityFieldValue = form.getFieldValue("quantity");
+    const totalPrice = parseFloat(value) * parseFloat(quantityFieldValue);
+    form.setFieldsValue({ category: totalPrice.toFixed(2) });
+  };
+
+  const handleQuantityChange = (value) => {
+    const priceFieldValue = form.getFieldValue("price");
+    const totalPrice = priceFieldValue * value;
+    form.setFieldsValue({ category: totalPrice });
+  };
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <Row gutter={[16, 16]}>
@@ -58,30 +69,43 @@ const StockForm = ({ form, onFinish }) => {
           <Form.Item
             name="price"
             label="Price"
-            rules={[{ required: true, message: "Please input price!" }]}
+            rules={[
+              { required: true, message: "Please input price!" },
+              {
+                pattern: /^\d+(\.\d{1,2})?$/,
+                message: "cents must be included",
+              },
+            ]}
           >
-            <Input />
+            <Input onChange={(e) => handlePriceChange(e.target.value)} />
           </Form.Item>
         </Col>
         <Col span={8}>
           <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please input category!" }]}
+            name="quantity"
+            label="Quantity"
+            rules={[{ required: true, message: "Please input quantity!" }]}
           >
-            <Input />
+            <Input onChange={(e) => handleQuantityChange(e.target.value)} />
           </Form.Item>
         </Col>
+
         <Col span={8}>
           <Form.Item name="unit" label="Unit">
             <Input />
           </Form.Item>
         </Col>
+
         <Col span={8}>
-          <Form.Item name="quantity" label="Quantity">
-            <Input />
+          <Form.Item
+            name="category"
+            label="Total"
+            rules={[{ required: true, message: "Please input total!" }]}
+          >
+            <Input disabled />
           </Form.Item>
         </Col>
+        
       </Row>
     </Form>
   );

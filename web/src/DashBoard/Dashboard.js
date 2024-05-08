@@ -158,9 +158,8 @@ const Dashboard = () => {
       labels: {
         datetimeFormatter: {
           year: 'yyyy',
-          month: 'MMM \'yy',
-          day: 'dd MMM',
-          hour: 'HH:mm'
+          month: 'MMM',
+          day: 'dd'
         }
       }
     },
