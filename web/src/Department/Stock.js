@@ -8,6 +8,7 @@ import {
   Button,
   Modal,
   message,
+  notification
 } from "antd";
 import {
   PlusOutlined,
@@ -166,6 +167,22 @@ const StockManagementPage = () => {
       price: stock.price,
     });
   };
+  const checkStockQuantity = () => {
+    // Loop through each stock item
+    data.forEach((item) => {
+      // If the quantity is less than 2, show notification
+      if (item.quantity < 5) {
+        notification.warning({
+          message: `Low Stock Alert`,
+          description: `${item.name} (ID: ${item.stockId}) has low stock (${item.quantity})`,
+        });
+      }
+    });
+  };
+
+  useEffect(() => {
+    checkStockQuantity();
+  }, [data]);
 
   const columns = [
     { field: "stockId", headerName: "Stock ID", width: 150 },
@@ -180,9 +197,19 @@ const StockManagementPage = () => {
     { field: "name", headerName: "Name", width: 100 },
     { field: "description", headerName: "Description", width: 150 },
     { field: "unit", headerName: "Unit", width: 100 },
+    {
+      field: "price",
+      headerName: "Price",
+      width: 100,
+      renderCell: (params) => `RS ${params.value.toFixed(2)}`,
+    },
     { field: "quantity", headerName: "Quantity", width: 100 },
-    { field: "category", headerName: "Category", width: 100 },
-    { field: "price", headerName: "Price", width: 100 },
+     {
+    field: "category",
+    headerName: "Total",
+    width: 100,
+    renderCell: (params) => `Rs ${params.value}`,
+  },
 
     {
       field: "action",
