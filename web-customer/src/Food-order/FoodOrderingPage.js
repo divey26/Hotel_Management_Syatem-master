@@ -66,11 +66,10 @@ const FoodOrderingPage = () => {
 
   const handleOrder = () => {
     if (storedAuthToken && storedCustomerId) {
-      if (deliveryAddress) {
+      if (deliveryAddress &&  customerPhone) {
         createNewOrder();
       } else {
-        message.error("Please enter delivery address to order");
-      }
+        message.error("Please enter delivery address and phone number to order");      }
     } else {
       Swal.fire({
         icon: "error",
@@ -221,52 +220,58 @@ const FoodOrderingPage = () => {
           )}
         />
 
-<Form.Item
-  name="phone"
-  label="Phone"
-  rules={[
-    { required: true, message: "Please input phone!" },
-    {
-      pattern: /^[0-9]*$/,
-      message: "Please enter only numbers.",
-    },
-    {
-      len: 10,
-      message: "Phone number should be 10 digits long.",
-    },
-  ]}
->
-  <Input
-    value={customerPhone}
-    onChange={(e) => {
-      const inputValue = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
-      setCustomerPhone(inputValue);
-    }}
-    maxLength={10} // Limit input to 10 characters
-  />
-</Form.Item>
 
-
-        <Form.Item
-          label="Delivery Address"
-          name="deliveryAddress"
-          rules={[
-            {
-              required: true,
-              message: "Please enter your delivery address!",
-            },
-          ]}
+<Form
+          form={form}
+          onFinish={handleOrder} // Added onFinish for form submission
         >
-          <Input
-            value={deliveryAddress}
-            onChange={(e) => setDeliveryAddress(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button type="primary" onClick={handleOrder}>
-            Order Now
-          </Button>
-        </Form.Item>
+          <Form.Item
+            name="phone"
+            label="Phone"
+            rules={[
+              { required: true, message: "Please input phone!" },
+              {
+                pattern: /^[0-9]*$/,
+                message: "Please enter only numbers.",
+              },
+              {
+                len: 10,
+                message: "Phone number should be 10 digits long.",
+              },
+            ]}
+          >
+            <Input
+              value={customerPhone}
+              onChange={(e) => {
+                const inputValue = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+                setCustomerPhone(inputValue);
+              }}
+              maxLength={10} // Limit input to 10 characters
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Delivery Address"
+            name="deliveryAddress"
+            rules={[
+              {
+                required: true,
+                message: "Please enter your delivery address!",
+              },
+            ]}
+          >
+            <Input
+              value={deliveryAddress}
+              onChange={(e) => setDeliveryAddress(e.target.value)}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Order Now
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );
