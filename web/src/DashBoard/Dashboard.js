@@ -147,7 +147,7 @@ const Dashboard = () => {
       }
     },
     title: {
-      text: 'Leave & Attendance', // Set the title of the chart
+      text: 'Leave & Attendance',
       align: 'center',
       style: {
         fontSize: '20px',
