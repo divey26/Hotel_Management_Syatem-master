@@ -39,7 +39,6 @@ const Summa = ({stockId}) => {
     content: () => componentRef.current,
   });
 
-
   return (
     <Content style={{ padding: "24px" }}>
       <div style={{ textAlign: "center" }}>

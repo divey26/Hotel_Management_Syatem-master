@@ -47,9 +47,9 @@ const Dashboard = () => {
   const fetchData1Leave = async () => {
     let apiUrl;
     const token = localStorage.getItem("userId");
-
-    apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/user/${token}`; // Fetch leave requests for specific user
-
+    const employeeids = localStorage.getItem("empid");
+    apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/user/${employeeids}`; // Fetch leave requests for specific user
+    console.log(apiUrl);
     try {
       const response = await axios.get(apiUrl);
       setData(
@@ -60,6 +60,7 @@ const Dashboard = () => {
           endDate: moment(item.endDate).format("YYYY-MM-DD"),
         }))
       );
+    
       setLeaveCount(response.data.data.length);
     } catch (error) {
       console.error(`Failed to fetch data: ${error.message}`);
@@ -68,10 +69,12 @@ const Dashboard = () => {
   const fetchRecords1 = async () => {
     try {
       const token = localStorage.getItem("userId");
+      const employeeids = localStorage.getItem("empid");
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/user/${token}`
+        `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/user/${employeeids}`
       );
       setData(response.data.data);
+      console.log(response)
       setRecordCount(response.data.data.length);
     } catch (error) {
       console.error("Failed to fetch records: " + error.message);
@@ -80,7 +83,8 @@ const Dashboard = () => {
   const fetchDataLeave = async () => {
     try {
       const token = localStorage.getItem("userId");
-      const apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/user/${token}`;
+      const employeeids = localStorage.getItem("empid");
+      const apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/leave-request/user/${employeeids}`;
       const response = await axios.get(apiUrl);
       const formattedData = response.data.data.map((item, index) => ({
         x: new Date(moment(item.startDate).format("YYYY-MM-DD")),
@@ -103,7 +107,8 @@ const Dashboard = () => {
   const fetchRecords = async () => {
     try {
       const token = localStorage.getItem("userId");
-      const apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/user/${token}`;
+      const employeeids = localStorage.getItem("empid");
+      const apiUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/attendance/user/${employeeids}`;
       const response = await axios.get(apiUrl);
       const formattedData = response.data.data.map(item => ({
         x: new Date(moment(item.date).format("YYYY-MM-DD")),
@@ -140,6 +145,13 @@ const Dashboard = () => {
         type: 'x',
         autoScaleYaxis: true
       }
+    },
+    title: {
+      text: 'Leave & Attendance',
+      align: 'center',
+      style: {
+        fontSize: '20px',
+      },
     },
     xaxis: {
       type: 'datetime',
@@ -299,8 +311,7 @@ const bubleoptions = {
 
 
   const barChartData = Object.keys(orderItemsData).map((item) => {
-    console.log("Item:", item);
-    console.log("Quantity:", orderItemsData[item]);
+
     return {
       y: item,
       x: orderItemsData[item],

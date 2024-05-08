@@ -68,10 +68,11 @@ const StockManagementPage = () => {
       const orderAttributesMatch = Object.values(row).some((value) =>
         value.toString().toLowerCase().includes(searchQuery.toLowerCase())
       );
-  
+      const idMatch = row._id.toLowerCase().includes(searchQuery.toLowerCase()); // Include searching by _id
+
       const depMatch = row.department.name.toLowerCase().includes(searchQuery.toLowerCase());
   
-      return orderAttributesMatch || depMatch;
+      return orderAttributesMatch || depMatch || idMatch;
     });
     setFilteredData(filtered);
   };

@@ -271,6 +271,7 @@ const LeaveTrackingPage = () => {
           );
           setEditingKey(""); // Reset editing state
           form.resetFields();
+          fetchData();
         } catch (error) {
           message.error(`Failed to update leave request: ${error.message}`);
         }
@@ -288,6 +289,7 @@ const LeaveTrackingPage = () => {
         setData([...data, { key: data.length.toString(), ...response.data }]);
         message.success("Leave request added successfully");
         fetchData();
+        form.resetFields();
       } catch (error) {
         message.error(`Failed to add leave request: ${error.message}`);
       }
@@ -317,7 +319,7 @@ const LeaveTrackingPage = () => {
                 name="endDate"
                 label="End Date"
                 rules={[{ required: true, message: "Please select end date!" },
-                { validator: validateCheckInDate },
+                { validator: validateCheckOutDate },
                 ]}
               >
                 <DatePicker style={{ width: "100%" }} />
