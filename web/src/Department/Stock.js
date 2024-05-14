@@ -55,7 +55,7 @@ const StockManagementPage = () => {
   useEffect(() => {
     fetchStocks();
   }, []);
-
+//const sortedRows = [...transformedRows].sort((a, b) => a.stockId.localeCompare(b.stockId));
   const transformedRows = filteredData.map((row, index) => ({
     id: row._id, // or any other property that can uniquely identify the row
     ...row,

@@ -80,9 +80,7 @@ const BookingForm = ({ form, onFinish, selectedRoom }) => {
           <InputNumber min={1} />
         </Form.Item>
 
-        <Form.Item label="Special Requests" name="requests">
-          <Input.TextArea />
-        </Form.Item>
+        
 
         <Form.Item>
           <Button type="primary" htmlType="submit">

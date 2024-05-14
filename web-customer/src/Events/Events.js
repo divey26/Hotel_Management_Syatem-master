@@ -169,7 +169,7 @@ function EventLocations({ locations }) {
               { validator: validateNoOfGuests },
             ]}
           >
-            <InputNumber min={1} />
+            <Input type = "number" min={1} />
           </Form.Item>
           <Form.Item name="requests" label="Additional Requests">
             <Input.TextArea />

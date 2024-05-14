@@ -111,11 +111,7 @@ const adminUserItems = [
         icon: <UserSwitchOutlined />,
         label: "Suppliers",
       },
-      {
-        key: "new",
-        icon: <QrcodeOutlined />,
-        label: "RFID",
-      },
+      
       {
         key: "scanner",
         icon: <ScanOutlined />,
@@ -229,9 +225,21 @@ const adminUserItems = [
 
   // Feedback Service System
   {
-    key: "feedbackService",
+    key: "customerAffairs",
     icon: <SolutionOutlined />,
-    label: "Feedback Services",
+    label: "Customer Affairs",
+    children: [
+      {
+        key: "feedbackService",
+        icon: <RestOutlined />,
+        label: "Feedback",
+      },
+      {
+        key: "complaintService",
+        icon: <CalendarOutlined />,
+        label: "Complaints",
+      },
+    ],
   },
 
   {
@@ -244,11 +252,7 @@ const adminUserItems = [
         icon: <AppstoreAddOutlined />,
         label: "Payments",
       },
-      {
-        key: "invoice",
-        icon: <CheckCircleOutlined />,
-        label: "Invoice Generation",
-      },
+     
     ],
   },
 ];
@@ -400,6 +404,13 @@ const App = ({ children, userType }) => {
     if (item.key === "additionalServicesRequests") {
       navigate("/additional-service-requests");
     }
+    if (item.key === "feedbackService") {
+      navigate("/feedback");
+    }
+    if (item.key === "complaintService") {
+      navigate("/complaint");
+    }
+
 
     if (item.key === "payments") {
       navigate("/payments");

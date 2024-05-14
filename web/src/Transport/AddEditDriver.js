@@ -25,15 +25,24 @@ const DriverForm = ({ form, onFinish }) => {
         </Col>
       </Row>
       <Row gutter={[16, 16]}>
-        <Col span={8}>
+      <Col span={8}>
           <Form.Item
             name="phone"
             label="Phone"
-            rules={[{ required: true, message: "Please input phone number!" }]}
+            rules={[{ required: true, message: "Please input phone number!" },
+            {
+              len: 10,
+              message: "Phone number must be 10 digits long"
+            },
+            {
+              pattern: /^\d{10}$/,
+              message: "Phone number must contain only digits"
+            }
+            ]}
           >
-            <Input />
+            <Input type ="number"/>
           </Form.Item>
-        </Col>
+        </Col>
         <Col span={8}>
           <Form.Item
             name="address"

@@ -49,7 +49,6 @@ const MenuForm = ({ form, onFinish }) => {
           <Form.Item
             name="price"
             label="Price"
-            rules={[{ required: true, message: "Please input price!" }]}
           >
             <Input />
           </Form.Item>

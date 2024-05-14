@@ -47,11 +47,7 @@ const AdditionalServiceRequests = () => {
           {params.row.status === "Confirmed" && (
             <Button
               type="link"
-              icon={
-                <CloseCircleOutlined
-                  style={{ color: "red", fontSize: "30px" }}
-                />
-              }
+              
               onClick={() => handleCancelConfirmation(params.row)}
               style={{ padding: "0" }}
               size="large"

@@ -229,7 +229,7 @@ const FoodOrderingPage = () => {
             name="phone"
             label="Phone"
             rules={[
-              { required: true, message: "Please input phone!" },
+              {  },
               {
                 pattern: /^[0-9]*$/,
                 message: "Please enter only numbers.",

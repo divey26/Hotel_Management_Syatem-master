@@ -383,7 +383,7 @@ const bubleoptions = {
     },
     yaxis: {
       title: {
-        text: "Number of Orders/Booking",
+        text: "Amount gain by Orders/Booking",
       },
     },
     dataLabels: {

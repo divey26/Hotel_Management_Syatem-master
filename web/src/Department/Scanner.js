@@ -135,7 +135,6 @@ const Scanner = () => {
 <div style={{ marginLeft: "540px", marginRight: "auto", marginTop:"20px" }}>
               <Button
                 type="primary"
-               
                 onClick={handleScan}
               >
                 Scan

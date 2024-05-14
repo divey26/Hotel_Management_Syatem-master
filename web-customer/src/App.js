@@ -19,6 +19,12 @@ import Orders from "./Food-order/Orders";
 import EventBookings from "./Events/EventBookings";
 import AdditionalServiceRequests from "./AdditionalService/AdditionalServiceRequests";
 import TravelRequests from "./Travels/TravelRequests";
+import FeedbackForm from "./CustomerAffairs/Feedback/Feedback";
+import RaiseComplaintPage from "./CustomerAffairs/Complaint/Complaint";
+import ViewComplaintPage from "./CustomerAffairs/Complaint/ViewComplaint";
+import FeedbackViewEdit from "./CustomerAffairs/Feedback/ViewFeedback";
+import CustomerAffairsPage from "./CustomerAffairs/CusAffair";
+
 
 function App() {
   const storedCustomerId = localStorage.getItem("customerId");
@@ -106,6 +112,58 @@ function App() {
           element={
             isAuthenticated() ? (
               <Template children={<AdditionalServiceRequests />} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+<Route
+          path="/feedback"
+          element={
+            isAuthenticated() ? (
+              <Template children={<FeedbackForm />} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route
+          path="/complaint"
+          element={
+            isAuthenticated() ? (
+              <Template children={<RaiseComplaintPage />} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/viewcomplaint/"
+          element={
+            isAuthenticated() ? (
+              <Template children={<ViewComplaintPage />} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/viewfeedback"
+          element={
+            isAuthenticated() ? (
+              <Template children={<FeedbackViewEdit />} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route
+          path="/customeraffair"
+          element={
+            isAuthenticated() ? (
+              <Template children={<CustomerAffairsPage />} />
             ) : (
               <Navigate to="/login" />
             )

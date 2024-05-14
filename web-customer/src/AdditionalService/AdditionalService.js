@@ -232,7 +232,17 @@ const AdditionalService = () => {
           <Form.Item
             label="Number of Person"
             name="noOfPersons"
-            rules={[{ required: true, message: "Please input no of person!" }]}
+            rules={[
+              { required: true, message: "Please input the number of persons!" },
+               ({ getFieldValue }) => ({
+                 validator(_, value) {
+                   if (value && value > 5) {
+                     return Promise.reject(new Error("Number of persons cannot exceed 5!"));
+                  }
+                   return Promise.resolve();
+                 },
+               }),
+            ]}
           >
             <InputNumber min={1} />
           </Form.Item>

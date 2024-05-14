@@ -6,6 +6,8 @@ require("dotenv").config();
 
 const app = express();
 const roomRoutes = require("./src/rooms/rooms.routes");
+const feedbackRoutes = require("./src/CustomerAffair/Feedback/FeedbackRoute");
+const complaintRoutes = require("./src/CustomerAffair/Complaint/ComplaintRoute"); 
 const userRoutes = require("./src/users/users.routes");
 const employeeRoutes = require("./src/employees/employee.routes");
 const customerRoutes = require("./src/customers/customer.routes");
@@ -47,6 +49,8 @@ app.use(express.json());
 
 // Routes
 app.use("/api/rooms", roomRoutes);
+app.use("/api/feedback", feedbackRoutes);
+app.use("/api/complaints", complaintRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/customers", customerRoutes);

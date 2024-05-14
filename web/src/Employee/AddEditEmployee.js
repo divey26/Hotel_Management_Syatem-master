@@ -19,6 +19,39 @@ const EmployeeForm = ({ form, onFinish }) => {
       callback();
     }
   };
+
+  const validateFirstName = (rule, value, callback) => {
+    if (value && !/^[a-zA-Z]+$/.test(value)) {
+      callback("Please input letters only for the first name!");
+    } else {
+      callback();
+    }
+  };
+
+  const validateLastName = (rule, value, callback) => {
+    if (value && !/^[a-zA-Z]+$/.test(value)) {
+      callback("Please input letters only for the last name!");
+    } else {
+      callback();
+    }
+  };
+
+  const validateLettersOnly = (rule, value, callback) => {
+    if (value && !/^[a-zA-Z]+$/.test(value)) {
+      callback("Please input letters only!");
+    } else {
+      callback();
+    }
+  };
+
+  const validateZipCode = (rule, value, callback) => {
+    if (value && !/^[0-9]+$/.test(value)) {
+      callback("Please input numbers only for the zip code!");
+    } else {
+      callback();
+    }
+  };
+
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <Row gutter={[16, 16]}>
@@ -26,7 +59,10 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="firstName"
             label="First Name"
-            rules={[{ required: true, message: "Please input first name!" }]}
+            rules={[
+              { required: true, message: "Please input first name!" },
+              { validator: validateFirstName },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -35,12 +71,15 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="lastName"
             label="Last Name"
-            rules={[{ required: true, message: "Please input last name!" }]}
+            rules={[
+              { required: true, message: "Please input last name!" },
+              { validator: validateLastName },
+            ]}
           >
             <Input />
           </Form.Item>
         </Col>
-         <Col span={12}>
+        <Col span={12}>
           <Form.Item
             name="email"
             label="Email"
@@ -68,7 +107,8 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="address"
             label="Address"
-            rules={[{ required: true, message: "Please input address!" }]}
+            rules={[
+            ]}
           >
             <Input />
           </Form.Item>
@@ -77,7 +117,10 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="city"
             label="City"
-            rules={[{ required: true, message: "Please input city!" }]}
+            rules={[
+              { required: true, message: "Please input city!" },
+              { validator: validateLettersOnly },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -86,7 +129,10 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="state"
             label="State"
-            rules={[{ required: true, message: "Please input state!" }]}
+            rules={[
+              { required: true, message: "Please input state!" },
+              { validator: validateLettersOnly },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -95,7 +141,10 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="country"
             label="Country"
-            rules={[{ required: true, message: "Please input country!" }]}
+            rules={[
+              { required: true, message: "Please input country!" },
+              { validator: validateLettersOnly },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -104,7 +153,10 @@ const EmployeeForm = ({ form, onFinish }) => {
           <Form.Item
             name="zipCode"
             label="Zip Code"
-            rules={[{ required: true, message: "Please input zip code!" }]}
+            rules={[
+              { required: true, message: "Please input zip code!" },
+              { validator: validateZipCode },
+            ]}
           >
             <Input />
           </Form.Item>
@@ -127,4 +179,4 @@ const EmployeeForm = ({ form, onFinish }) => {
   );
 };
 
-export default EmployeeForm;
+export default EmployeeForm;

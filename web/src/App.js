@@ -36,6 +36,10 @@ import Payments from "./PaymentsAndIncoice/Payments";
 import Summa from "./Department/summa";
 import Scanner from "./Department/Scanner";
 import DetailsPage from "./Department/Details";
+import FeedbackTablePage from "./Feedback/Feedback";
+import UpdateFeedbackPage from "./Feedback/UpdateFeedback";
+import ComplaintsTablePage from "./Complaint/Complaint";
+import UpdateComplaintPage from "./Complaint/UpdateComplaint";
 
 function App() {
   const storedAuthToken = localStorage.getItem("authToken");
@@ -277,6 +281,49 @@ function App() {
           path="/payments"
           element={isAdminAuthenticated() ? <Payments /> : <Navigate to="/" />}
         />
+
+
+<Route
+          path="/feedback"
+          element={
+            isAdminAuthenticated() ? (
+              <FeedbackTablePage />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+         <Route
+          path="/complaint"
+          element={
+            isAdminAuthenticated() ? (
+              <ComplaintsTablePage />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+         <Route
+          path="/updatefeedback/:id"
+          element={
+            isAdminAuthenticated() ? (
+              <UpdateFeedbackPage />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+         <Route
+          path="/updatecomplaint/:id"
+          element={
+            isAdminAuthenticated() ? (
+              <UpdateComplaintPage />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
       </Routes>
     </Router>
   );

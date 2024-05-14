@@ -43,7 +43,7 @@ const Template = ({ children }) => {
   const headerItems = [
     {
       key: "1",
-      label: "Rooms",
+      label: "Home",
       icon: <HomeOutlined />,
       onClick: () => navigate("/"),
     },
@@ -70,6 +70,25 @@ const Template = ({ children }) => {
       label: "Additional Services",
       icon: <CalendarOutlined />,
       onClick: () => navigate("/additional-services"),
+    },
+    {
+      key: "6",
+      label: "Customer Affairs",
+      icon: <CalendarOutlined />,
+      onClick: () => navigate("/customeraffair"),
+    },
+    {
+      key: "7",
+      label: "Customer Affair - Feedback",
+      icon: <CalendarOutlined />,
+      onClick: () => navigate("/feedback"),
+    },
+    
+    {
+      key: "8",
+      label: "Customer Affair - Complaint",
+      icon: <CalendarOutlined />,
+      onClick: () => navigate("/complaint"),
     },
   ];
 
@@ -104,6 +123,20 @@ const Template = ({ children }) => {
       icon: <CalendarOutlined />,
       onClick: () => navigate("/additional-service-requests"),
     },
+    {
+      key: "6",
+      label: "Customer Affair - Feedback",
+      icon: <CalendarOutlined />,
+      onClick: () => navigate("/feedback"),
+    },
+    
+    {
+      key: "7",
+      label: "Customer Affair - Complaint",
+      icon: <CalendarOutlined />,
+      onClick: () => navigate("/complaint"),
+    },
+    
   ];
 
   const handleLogout = () => {
@@ -133,6 +166,8 @@ const Template = ({ children }) => {
             mode="horizontal"
             defaultSelectedKeys={["1"]}
             items={headerItems}
+            style={{fontSize:'10px'}}
+
           />
         </div>
         <div

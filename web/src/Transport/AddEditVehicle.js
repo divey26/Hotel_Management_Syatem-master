@@ -27,15 +27,20 @@ const VehicleForm = ({ form, onFinish }) => {
         </Col>
       </Row>
       <Row gutter={[16, 16]}>
-        <Col span={8}>
+      <Col span={8}>
           <Form.Item
             name="year"
             label="Year"
-            rules={[{ required: true, message: "Please input year!" }]}
+            rules={[{ required: true, message: "Please input year!" },
+            {
+              pattern: /^2[0-9]{3}$/,
+              message: "Year must start with 2 and contain only four digits"
+            }
+            ]}
           >
             <Input type="number" />
           </Form.Item>
-        </Col>
+        </Col>
         <Col span={8}>
           <Form.Item
             name="type"
